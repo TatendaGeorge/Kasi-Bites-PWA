@@ -105,20 +105,20 @@ export default function Orders() {
   }
 
   return (
-    <div className="min-h-screen bg-white pb-nav md:pb-0">
+    <div className="min-h-screen bg-white pb-nav lg:pb-0">
       {/* Header - Mobile only */}
-      <header className="sticky top-0 z-40 bg-white border-b border-gray-100 safe-top md:hidden">
+      <header className="sticky top-0 z-40 bg-white border-b border-gray-100 safe-top lg:hidden">
         <div className="px-4 py-4">
           <h1 className="text-2xl font-bold">My Orders</h1>
         </div>
       </header>
 
       {/* Desktop Header */}
-      <div className="hidden md:block px-6 py-6 border-b border-gray-100">
+      <div className="hidden lg:block px-8 py-6 border-b border-gray-100">
         <h1 className="text-2xl font-bold">My Orders</h1>
       </div>
 
-      <div className="px-4 md:px-6 py-6">
+      <div className="px-4 lg:px-8 py-6">
         {/* Order Lookup for Guests */}
         {!isAuthenticated && (
           <div className="mb-6">
@@ -178,7 +178,7 @@ export default function Orders() {
                 </p>
 
                 {/* Orders Grid */}
-                <div className="space-y-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 md:space-y-0">
+                <div className="space-y-4 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-4 lg:space-y-0">
                   {orders.map((order) => (
                     <button
                       key={order.id}
@@ -216,12 +216,12 @@ export default function Orders() {
 
                 {/* Load More Button */}
                 {hasMorePages && (
-                  <div className="pt-4 md:flex md:justify-center">
+                  <div className="pt-4 lg:flex lg:justify-center">
                     <Button
                       onClick={handleLoadMore}
                       variant="outline"
                       isLoading={isLoadingMore}
-                      className="w-full md:w-auto md:px-8"
+                      className="w-full lg:w-auto lg:px-8"
                     >
                       {isLoadingMore ? 'Loading...' : 'Load More Orders'}
                     </Button>

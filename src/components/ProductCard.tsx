@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ApiProduct } from '@/types';
@@ -8,9 +8,12 @@ interface ProductCardProps {
   product: ApiProduct;
   rank?: number;
   className?: string;
+  onOpenModal?: (product: ApiProduct) => void;
 }
 
-export function ProductCard({ product, rank, className }: ProductCardProps) {
+export function ProductCard({ product, rank, className, onOpenModal }: ProductCardProps) {
+  const navigate = useNavigate();
+
   // Get the lowest price from all sizes
   const lowestPrice = Math.min(...product.sizes.map(s => s.price));
 
@@ -18,11 +21,21 @@ export function ProductCard({ product, rank, className }: ProductCardProps) {
   const hasSalePrice = product.sale_price !== null && product.sale_price !== undefined;
   const displayPrice = hasSalePrice ? product.sale_price : lowestPrice;
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    // Check if we're on desktop (lg breakpoint = 1024px)
+    if (window.innerWidth >= 1024 && onOpenModal) {
+      onOpenModal(product);
+    } else {
+      navigate(`/product/${product.id}`, { state: { product } });
+    }
+  };
+
   return (
-    <Link
-      to={`/product/${product.id}`}
-      state={{ product }}
-      className={cn('block group', className)}
+    <div
+      onClick={handleClick}
+      className={cn('block group cursor-pointer', className)}
     >
       {/* Image Container */}
       <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-gray-100">
@@ -55,10 +68,7 @@ export function ProductCard({ product, rank, className }: ProductCardProps) {
 
         {/* Add Button */}
         <button
-          onClick={(e) => {
-            e.preventDefault();
-            // Will navigate to product detail
-          }}
+          onClick={handleClick}
           className={cn(
             'absolute bottom-2 right-2',
             'w-8 h-8 bg-white rounded-full shadow-md',
@@ -89,6 +99,6 @@ export function ProductCard({ product, rank, className }: ProductCardProps) {
           )}
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

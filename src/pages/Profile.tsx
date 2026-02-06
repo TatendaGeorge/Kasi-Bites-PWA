@@ -34,15 +34,15 @@ export default function Profile() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-white pb-nav md:pb-0">
-        <header className="sticky top-0 z-40 bg-white border-b border-gray-100 safe-top md:hidden">
+      <div className="min-h-screen bg-white pb-nav lg:pb-0">
+        <header className="sticky top-0 z-40 bg-white border-b border-gray-100 safe-top lg:hidden">
           <div className="px-4 py-4">
             <h1 className="text-2xl font-bold">Account</h1>
           </div>
         </header>
 
         {/* Desktop Header */}
-        <div className="hidden md:block px-6 py-6 border-b border-gray-100">
+        <div className="hidden lg:block px-8 py-6 border-b border-gray-100">
           <h1 className="text-2xl font-bold">Account</h1>
         </div>
 
@@ -66,8 +66,8 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 md:bg-white pb-nav md:pb-0">
-      <header className="sticky top-0 z-40 bg-white border-b border-gray-100 safe-top md:hidden">
+    <div className="min-h-screen bg-gray-50 lg:bg-white pb-nav lg:pb-0">
+      <header className="sticky top-0 z-40 bg-white border-b border-gray-100 safe-top lg:hidden">
         <div className="flex items-center justify-between px-4 py-4">
           <h1 className="text-2xl font-bold">Account</h1>
           {!isEditing && (
@@ -82,7 +82,7 @@ export default function Profile() {
       </header>
 
       {/* Desktop Header */}
-      <div className="hidden md:flex items-center justify-between px-6 py-6 border-b border-gray-100">
+      <div className="hidden lg:flex items-center justify-between px-8 py-6 border-b border-gray-100">
         <h1 className="text-2xl font-bold">Account</h1>
         {!isEditing && (
           <button
@@ -95,7 +95,7 @@ export default function Profile() {
         )}
       </div>
 
-      <div className="px-4 md:px-6 py-6 md:max-w-2xl">
+      <div className="px-4 lg:px-8 py-6 lg:max-w-2xl">
         {/* Profile Card */}
         <div className="bg-white rounded-xl p-4 mb-6">
           {isEditing ? (
