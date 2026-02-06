@@ -205,9 +205,7 @@ export default function ProductDetail() {
             </div>
 
             <div className="space-y-3">
-              {product.sizes.map((size) => {
-                const priceDiff = selectedSize ? size.price - selectedSize.price : 0;
-                return (
+              {product.sizes.map((size) => (
                   <button
                     key={size.id}
                     onClick={() => setSelectedSize(size)}
@@ -215,11 +213,6 @@ export default function ProductDetail() {
                   >
                     <div className="text-left">
                       <p className="font-medium text-gray-900">{formatSize(size.size)} Fries</p>
-                      {priceDiff !== 0 && (
-                        <p className="text-sm text-gray-500">
-                          {priceDiff > 0 ? '+' : ''}R{priceDiff.toFixed(2)}
-                        </p>
-                      )}
                       <p className="text-sm text-orange-500">Popular</p>
                     </div>
                     <div className={cn(
@@ -233,8 +226,7 @@ export default function ProductDetail() {
                       )}
                     </div>
                   </button>
-                );
-              })}
+              ))}
             </div>
           </div>
 
@@ -265,7 +257,6 @@ export default function ProductDetail() {
                         {addon.description && (
                           <p className="text-sm text-gray-500">{addon.description}</p>
                         )}
-                        <p className="text-sm text-orange-500">+R{addon.price.toFixed(2)}</p>
                       </div>
                       <div className={cn(
                         'w-6 h-6 rounded border-2 flex items-center justify-center transition-colors',
