@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Search, ShoppingBag, Loader2, RefreshCw } from 'lucide-react';
-import Logo from '@/assets/logo.png';
+import Logo from '@/assets/kasibites-logo.svg';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
 import { ProductCard } from '@/components/ProductCard';
@@ -112,7 +112,7 @@ export default function Home() {
       <header className="sticky top-0 z-40 bg-white safe-top lg:hidden">
         <div className="flex items-center justify-between px-4 py-3">
           <div>
-            <img src={Logo} alt="Logo" className="w-15 h-15" />
+            <img src={Logo} alt="Kasi Bites" className="h-10" />
           </div>
           <Link
             to="/cart"

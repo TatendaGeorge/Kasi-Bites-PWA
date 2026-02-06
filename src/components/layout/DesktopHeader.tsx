@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { ShoppingBag, Search } from 'lucide-react';
-import Logo from '@/assets/logo.png';
+import Logo from '@/assets/kasibites-logo.svg';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useState } from 'react';
@@ -38,9 +38,8 @@ export function DesktopHeader({ searchQuery = '', onSearchChange }: DesktopHeade
       <div className="px-6">
         <div className="flex items-center h-16 gap-4">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 flex-shrink-0">
-            <img src={Logo} alt="Kasi Bites" className="w-10 h-10" />
-            <span className="text-xl font-bold">Kasi Bites</span>
+          <Link to="/" className="flex items-center flex-shrink-0">
+            <img src={Logo} alt="Kasi Bites" className="h-12" />
           </Link>
 
           {/* Delivery/Collection Toggle */}
