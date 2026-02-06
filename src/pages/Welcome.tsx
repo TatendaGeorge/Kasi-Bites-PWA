@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
-import Logo from '@/assets/logo.png';
 
 export default function Welcome() {
   const navigate = useNavigate();
