@@ -194,9 +194,9 @@ export default function Checkout() {
       <Header title="Checkout" showBack />
 
       <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
-        <div className="flex-1 md:flex md:gap-8 px-4 md:px-6 py-6 overflow-y-auto">
+        <div className="flex-1 lg:flex lg:gap-8 px-4 lg:px-8 py-6 overflow-y-auto lg:max-w-5xl lg:mx-auto lg:w-full">
           {/* Form Section */}
-          <div className="flex-1 space-y-6 md:max-w-2xl">
+          <div className="flex-1 space-y-6 lg:max-w-2xl">
           {/* Order Type Selection */}
           <section>
             <h3 className="text-lg font-semibold mb-4">Order Type</h3>
@@ -391,19 +391,19 @@ export default function Checkout() {
 
           {/* API Error - Mobile */}
           {apiError && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg md:hidden">
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg lg:hidden">
               <p className="text-red-700">{apiError}</p>
             </div>
           )}
           </div>
 
           {/* Order Summary - Sidebar on Desktop */}
-          <div className="mt-6 md:mt-0 md:w-80 md:flex-shrink-0">
-            <div className="md:sticky md:top-6">
+          <div className="mt-6 lg:mt-0 lg:w-80 lg:flex-shrink-0">
+            <div className="lg:sticky lg:top-24">
               <section>
                 <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
 
-                <div className="bg-gray-50 md:bg-white md:border md:border-gray-200 rounded-xl p-4">
+                <div className="bg-gray-50 lg:bg-white lg:border lg:border-gray-200 rounded-xl p-4">
                   {items.map((item) => (
                     <div key={item.id} className="flex justify-between py-2">
                       <span className="text-gray-600">
@@ -429,7 +429,7 @@ export default function Checkout() {
                   </div>
 
                   {/* Desktop Submit Button */}
-                  <div className="hidden md:block mt-4">
+                  <div className="hidden lg:block mt-4">
                     <Button
                       type="submit"
                       fullWidth
@@ -443,7 +443,7 @@ export default function Checkout() {
 
               {/* API Error - Desktop */}
               {apiError && (
-                <div className="hidden md:block mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="hidden lg:block mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                   <p className="text-red-700">{apiError}</p>
                 </div>
               )}
@@ -452,7 +452,7 @@ export default function Checkout() {
         </div>
 
         {/* Submit Button - Mobile only */}
-        <div className="px-4 py-4 bg-white border-t border-gray-100 safe-bottom md:hidden">
+        <div className="px-4 py-4 bg-white border-t border-gray-100 safe-bottom lg:hidden">
           <Button
             type="submit"
             fullWidth

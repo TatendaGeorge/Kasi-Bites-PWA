@@ -41,9 +41,9 @@ export default function Cart() {
       <Header title="Cart" showBack />
 
       {/* Desktop: Two column layout */}
-      <div className="flex-1 md:flex md:gap-8 md:p-6">
+      <div className="flex-1 lg:flex lg:gap-8 lg:p-8 lg:max-w-5xl lg:mx-auto lg:w-full">
         {/* Cart Items */}
-        <div className="flex-1 px-4 md:px-0 overflow-y-auto">
+        <div className="flex-1 px-4 lg:px-0 overflow-y-auto">
           <div className="divide-y divide-gray-100">
             {items.map((item) => (
               <CartItem
@@ -66,7 +66,7 @@ export default function Cart() {
         </div>
 
         {/* Order Summary */}
-        <div className="bg-gray-50 md:bg-white md:border md:border-gray-200 md:rounded-2xl px-4 md:px-6 py-6 safe-bottom md:w-80 md:h-fit md:sticky md:top-6">
+        <div className="bg-gray-50 lg:bg-white lg:border lg:border-gray-200 lg:rounded-2xl px-4 lg:px-6 py-6 safe-bottom lg:w-80 lg:h-fit lg:sticky lg:top-24">
           <h3 className="font-semibold mb-4">Order Summary</h3>
 
           <div className="space-y-2 mb-4">

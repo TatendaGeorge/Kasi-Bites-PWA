@@ -101,161 +101,169 @@ export default function OrderTracking() {
     <div className="min-h-screen bg-white flex flex-col">
       <Header title="Track Order" showBack />
 
-      <div className="flex-1 px-4 py-6 overflow-y-auto">
-        {/* Order Header */}
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h2 className="text-xl font-bold">#{order.order_number}</h2>
-            <p className="text-sm text-gray-500">
-              {formatDateTime(order.created_at)}
-            </p>
-          </div>
-          <Badge variant={getStatusVariant(order.status)}>
-            {order.status_label}
-          </Badge>
-        </div>
+      <div className="flex-1 px-4 lg:px-8 py-6 overflow-y-auto lg:max-w-5xl lg:mx-auto lg:w-full">
+        <div className="lg:flex lg:gap-8">
+          {/* Left Column: Status Timeline */}
+          <div className="flex-1">
+            {/* Order Header */}
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h2 className="text-xl font-bold">#{order.order_number}</h2>
+                <p className="text-sm text-gray-500">
+                  {formatDateTime(order.created_at)}
+                </p>
+              </div>
+              <Badge variant={getStatusVariant(order.status)}>
+                {order.status_label}
+              </Badge>
+            </div>
 
-        {/* Status Timeline */}
-        {!isCancelled && (
-          <div className="mb-8">
-            <h3 className="font-semibold mb-4">Order Status</h3>
+            {/* Status Timeline */}
+            {!isCancelled && (
+              <div className="mb-8">
+                <h3 className="font-semibold mb-4">Order Status</h3>
 
-            <div className="relative">
-              {STATUS_ORDER.map((status, index) => {
-                const isCompleted = index <= currentStatusIndex;
-                const isCurrent = index === currentStatusIndex;
-                const isLast = index === STATUS_ORDER.length - 1;
-                const statusColor = STATUS_COLORS[status];
+                <div className="relative">
+                  {STATUS_ORDER.map((status, index) => {
+                    const isCompleted = index <= currentStatusIndex;
+                    const isCurrent = index === currentStatusIndex;
+                    const isLast = index === STATUS_ORDER.length - 1;
+                    const statusColor = STATUS_COLORS[status];
 
-                return (
-                  <div key={status} className="flex items-start gap-4 pb-6 last:pb-0">
-                    {/* Status indicator */}
-                    <div className="relative">
-                      <div
-                        className={cn(
-                          'w-8 h-8 rounded-full flex items-center justify-center text-white',
-                          isCompleted
-                            ? statusColor.bg
-                            : 'bg-gray-200 text-gray-400'
-                        )}
-                      >
-                        {isCompleted ? (
-                          <CheckCircle className="w-5 h-5" />
-                        ) : (
-                          <Circle className="w-5 h-5" />
-                        )}
-                      </div>
+                    return (
+                      <div key={status} className="flex items-start gap-4 pb-6 last:pb-0">
+                        {/* Status indicator */}
+                        <div className="relative">
+                          <div
+                            className={cn(
+                              'w-8 h-8 rounded-full flex items-center justify-center text-white',
+                              isCompleted
+                                ? statusColor.bg
+                                : 'bg-gray-200 text-gray-400'
+                            )}
+                          >
+                            {isCompleted ? (
+                              <CheckCircle className="w-5 h-5" />
+                            ) : (
+                              <Circle className="w-5 h-5" />
+                            )}
+                          </div>
 
-                      {/* Connecting line */}
-                      {!isLast && (
-                        <div
-                          className={cn(
-                            'absolute left-1/2 top-8 w-0.5 h-6 -translate-x-1/2',
-                            isCompleted ? statusColor.line : 'bg-gray-200'
+                          {/* Connecting line */}
+                          {!isLast && (
+                            <div
+                              className={cn(
+                                'absolute left-1/2 top-8 w-0.5 h-6 -translate-x-1/2',
+                                isCompleted ? statusColor.line : 'bg-gray-200'
+                              )}
+                            />
                           )}
-                        />
-                      )}
-                    </div>
+                        </div>
 
-                    {/* Status text */}
-                    <div className="flex-1 pt-1">
-                      <p
-                        className={cn(
-                          'font-medium',
-                          isCompleted ? 'text-black' : 'text-gray-400'
-                        )}
-                      >
-                        {STATUS_LABELS[status]}
-                      </p>
-                      {isCurrent && !isDelivered && (
-                        <p className={cn('text-sm animate-pulse', statusColor.text)}>
-                          In progress...
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Cancelled Notice */}
-        {isCancelled && (
-          <div className="bg-red-50 rounded-xl p-4 mb-6">
-            <p className="text-red-800 font-medium">This order has been cancelled</p>
-            {order.notes && (
-              <p className="text-red-600 text-sm mt-1">{order.notes}</p>
-            )}
-          </div>
-        )}
-
-        {/* Delivery Details */}
-        <div className="mb-6">
-          <h3 className="font-semibold mb-4">Delivery Details</h3>
-
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
-              <div>
-                <p className="text-sm text-gray-500">Delivery Address</p>
-                <p className="font-medium">{order.delivery_address}</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <Phone className="w-5 h-5 text-gray-400 mt-0.5" />
-              <div>
-                <p className="text-sm text-gray-500">Contact</p>
-                <p className="font-medium">{order.customer_phone}</p>
-              </div>
-            </div>
-
-            {order.estimated_delivery_at && !isDelivered && !isCancelled && (
-              <div className="flex items-start gap-3">
-                <Clock className="w-5 h-5 text-gray-400 mt-0.5" />
-                <div>
-                  <p className="text-sm text-gray-500">Estimated Delivery</p>
-                  <p className="font-medium">
-                    {new Date(order.estimated_delivery_at).toLocaleTimeString('en-ZA', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </p>
+                        {/* Status text */}
+                        <div className="flex-1 pt-1">
+                          <p
+                            className={cn(
+                              'font-medium',
+                              isCompleted ? 'text-black' : 'text-gray-400'
+                            )}
+                          >
+                            {STATUS_LABELS[status]}
+                          </p>
+                          {isCurrent && !isDelivered && (
+                            <p className={cn('text-sm animate-pulse', statusColor.text)}>
+                              In progress...
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
-          </div>
-        </div>
 
-        {/* Order Items */}
-        <div className="bg-gray-50 rounded-xl p-4">
-          <h3 className="font-semibold mb-3">Order Items</h3>
+            {/* Cancelled Notice */}
+            {isCancelled && (
+              <div className="bg-red-50 rounded-xl p-4 mb-6">
+                <p className="text-red-800 font-medium">This order has been cancelled</p>
+                {order.notes && (
+                  <p className="text-red-600 text-sm mt-1">{order.notes}</p>
+                )}
+              </div>
+            )}
 
-          {order.items.map((item) => (
-            <div key={item.id} className="flex justify-between py-2 text-sm">
-              <span className="text-gray-600">
-                {item.quantity}x {item.product_name} ({item.size})
-              </span>
-              <span>R{item.total_price.toFixed(2)}</span>
+            {/* Delivery Details */}
+            <div className="mb-6">
+              <h3 className="font-semibold mb-4">Delivery Details</h3>
+
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <div>
+                    <p className="text-sm text-gray-500">Delivery Address</p>
+                    <p className="font-medium">{order.delivery_address}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <Phone className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <div>
+                    <p className="text-sm text-gray-500">Contact</p>
+                    <p className="font-medium">{order.customer_phone}</p>
+                  </div>
+                </div>
+
+                {order.estimated_delivery_at && !isDelivered && !isCancelled && (
+                  <div className="flex items-start gap-3">
+                    <Clock className="w-5 h-5 text-gray-400 mt-0.5" />
+                    <div>
+                      <p className="text-sm text-gray-500">Estimated Delivery</p>
+                      <p className="font-medium">
+                        {new Date(order.estimated_delivery_at).toLocaleTimeString('en-ZA', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          ))}
+          </div>
 
-          <div className="border-t border-gray-200 mt-2 pt-2">
-            <div className="flex justify-between font-bold">
-              <span>Total</span>
-              <span>R{order.total.toFixed(2)}</span>
+          {/* Right Column: Order Items */}
+          <div className="lg:w-80 lg:flex-shrink-0">
+            <div className="bg-gray-50 lg:bg-white lg:border lg:border-gray-200 rounded-xl p-4 lg:sticky lg:top-24">
+              <h3 className="font-semibold mb-3">Order Items</h3>
+
+              {order.items.map((item) => (
+                <div key={item.id} className="flex justify-between py-2 text-sm">
+                  <span className="text-gray-600">
+                    {item.quantity}x {item.product_name} ({item.size})
+                  </span>
+                  <span>R{item.total_price.toFixed(2)}</span>
+                </div>
+              ))}
+
+              <div className="border-t border-gray-200 mt-2 pt-2">
+                <div className="flex justify-between font-bold">
+                  <span>Total</span>
+                  <span>R{order.total.toFixed(2)}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Bottom Action */}
-      <div className="px-4 py-4 safe-bottom">
+      <div className="px-4 lg:px-8 py-4 safe-bottom lg:max-w-5xl lg:mx-auto lg:w-full">
         <Button
           onClick={() => navigate('/')}
           variant="secondary"
           fullWidth
+          className="lg:w-auto lg:px-8"
         >
           Order More
         </Button>

@@ -24,16 +24,16 @@ export default function OrderConfirmation() {
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Success Header */}
-      <div className="bg-green-50 px-4 md:px-6 py-12 md:py-16 text-center">
-        <div className="w-20 h-20 md:w-24 md:h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <CheckCircle className="w-10 h-10 md:w-12 md:h-12 text-green-600" />
+      <div className="bg-green-50 px-4 lg:px-8 py-12 lg:py-16 text-center">
+        <div className="w-20 h-20 lg:w-24 lg:h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <CheckCircle className="w-10 h-10 lg:w-12 lg:h-12 text-green-600" />
         </div>
-        <h1 className="text-2xl md:text-3xl font-bold text-green-800 mb-2">Order Placed!</h1>
+        <h1 className="text-2xl lg:text-3xl font-bold text-green-800 mb-2">Order Placed!</h1>
         <p className="text-green-600">Your order has been received</p>
       </div>
 
       {/* Order Details */}
-      <div className="flex-1 px-4 md:px-6 py-6 md:flex md:gap-8 md:max-w-4xl md:mx-auto md:w-full">
+      <div className="flex-1 px-4 lg:px-8 py-6 lg:flex lg:gap-8 lg:max-w-5xl lg:mx-auto lg:w-full">
         {/* Left Column: Order Info */}
         <div className="flex-1">
           {/* Order Number */}
@@ -92,9 +92,9 @@ export default function OrderConfirmation() {
         </div>
 
         {/* Right Column: Order Summary */}
-        <div className="md:w-80 md:flex-shrink-0">
+        <div className="lg:w-80 lg:flex-shrink-0">
           {order && (
-            <div className="bg-gray-50 md:bg-white md:border md:border-gray-200 rounded-xl p-4 md:sticky md:top-6">
+            <div className="bg-gray-50 lg:bg-white lg:border lg:border-gray-200 rounded-xl p-4 lg:sticky lg:top-24">
               <h3 className="font-semibold mb-3">Order Summary</h3>
 
               {order.items.map((item) => (
@@ -126,11 +126,11 @@ export default function OrderConfirmation() {
       </div>
 
       {/* Action Buttons */}
-      <div className="px-4 md:px-6 py-4 md:py-6 safe-bottom md:max-w-4xl md:mx-auto md:w-full">
-        <div className="flex flex-col md:flex-row gap-3 md:justify-center">
+      <div className="px-4 lg:px-8 py-4 lg:py-6 safe-bottom lg:max-w-5xl lg:mx-auto lg:w-full">
+        <div className="flex flex-col lg:flex-row gap-3 lg:justify-center">
           <Button
             onClick={() => navigate(`/order-tracking/${orderNumber}`)}
-            className="md:w-auto md:px-8"
+            className="lg:w-auto lg:px-8"
             fullWidth
           >
             Track Order
@@ -138,7 +138,7 @@ export default function OrderConfirmation() {
           <Button
             onClick={() => navigate('/')}
             variant="secondary"
-            className="md:w-auto md:px-8"
+            className="lg:w-auto lg:px-8"
             fullWidth
           >
             Order More
