@@ -1,10 +1,11 @@
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ShoppingBag, Search } from 'lucide-react';
 import Logo from '@/assets/kasibites-logo.svg';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { CartDropdown } from '@/components/CartDropdown';
 
 // Routes where header should be hidden
 const HIDDEN_ROUTES = ['/login', '/register', '/welcome'];
@@ -20,6 +21,7 @@ export function DesktopHeader({ searchQuery = '', onSearchChange }: DesktopHeade
   const { user } = useAuth();
   const [localSearch, setLocalSearch] = useState(searchQuery);
   const [orderType, setOrderType] = useState<'delivery' | 'collection'>('delivery');
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Hide on certain routes
   const shouldHide = HIDDEN_ROUTES.some(route =>
@@ -87,16 +89,24 @@ export function DesktopHeader({ searchQuery = '', onSearchChange }: DesktopHeade
 
           {/* Right Side Actions - Far right corner */}
           <div className="flex items-center gap-3 flex-shrink-0">
-            {/* Cart button */}
-            <Link
-              to="/cart"
-              className="relative flex items-center gap-2 bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition-colors"
-            >
-              <ShoppingBag className="w-5 h-5" />
-              {itemCount > 0 && (
-                <span className="text-sm font-medium">{itemCount}</span>
-              )}
-            </Link>
+            {/* Cart button with dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsCartOpen(!isCartOpen)}
+                className="relative flex items-center gap-2 bg-black text-white px-4 py-2 rounded-full hover:bg-gray-800 transition-colors"
+              >
+                <ShoppingBag className="w-5 h-5" />
+                {itemCount > 0 && (
+                  <span className="text-sm font-medium">{itemCount}</span>
+                )}
+              </button>
+
+              {/* Cart Dropdown */}
+              <CartDropdown
+                isOpen={isCartOpen}
+                onClose={() => setIsCartOpen(false)}
+              />
+            </div>
 
             {/* Auth Buttons */}
             {!user ? (
