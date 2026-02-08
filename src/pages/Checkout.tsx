@@ -196,7 +196,7 @@ export default function Checkout() {
       <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
         {/* Desktop: Page Header */}
         <div className="hidden lg:block bg-white border-b border-gray-200">
-          <div className="max-w-5xl mx-auto px-8 py-6">
+          <div className="max-w-6xl mx-auto px-8 py-6">
             <div className="flex items-center gap-4">
               <button
                 type="button"
@@ -210,9 +210,9 @@ export default function Checkout() {
           </div>
         </div>
 
-        <div className="flex-1 lg:flex lg:gap-8 px-4 lg:px-8 py-6 overflow-y-auto lg:max-w-5xl lg:mx-auto lg:w-full lg:bg-gray-50">
+        <div className="flex-1 lg:flex lg:gap-8 px-4 lg:px-8 py-6 overflow-y-auto lg:max-w-6xl lg:mx-auto lg:w-full lg:bg-gray-50">
           {/* Form Section */}
-          <div className="flex-1 space-y-6 lg:max-w-2xl">
+          <div className="flex-1 space-y-6">
           {/* Order Type Selection */}
           <section className="lg:bg-white lg:rounded-xl lg:p-6 lg:border lg:border-gray-200">
             <h3 className="text-lg font-semibold mb-4">Order Type</h3>
