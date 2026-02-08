@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CreditCard, Banknote, Truck, Store, AlertTriangle, Loader2 } from 'lucide-react';
+import { CreditCard, Banknote, Truck, Store, AlertTriangle, Loader2, ArrowLeft } from 'lucide-react';
 import { cn, validateSAPhoneNumber } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
@@ -179,7 +179,7 @@ export default function Checkout() {
     return (
       <div className="min-h-screen bg-white flex flex-col">
         <Header title="Checkout" showBack />
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center lg:pt-8">
           <div className="flex flex-col items-center gap-3">
             <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
             <p className="text-gray-500">Loading checkout...</p>
@@ -190,15 +190,31 @@ export default function Checkout() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-white lg:bg-gray-50 flex flex-col">
       <Header title="Checkout" showBack />
 
       <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
-        <div className="flex-1 lg:flex lg:gap-8 px-4 lg:px-8 py-6 overflow-y-auto lg:max-w-5xl lg:mx-auto lg:w-full">
+        {/* Desktop: Page Header */}
+        <div className="hidden lg:block bg-white border-b border-gray-200">
+          <div className="max-w-5xl mx-auto px-8 py-6">
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <ArrowLeft className="w-6 h-6" />
+              </button>
+              <h1 className="text-2xl font-bold">Checkout</h1>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1 lg:flex lg:gap-8 px-4 lg:px-8 py-6 overflow-y-auto lg:max-w-5xl lg:mx-auto lg:w-full lg:bg-gray-50">
           {/* Form Section */}
           <div className="flex-1 space-y-6 lg:max-w-2xl">
           {/* Order Type Selection */}
-          <section>
+          <section className="lg:bg-white lg:rounded-xl lg:p-6 lg:border lg:border-gray-200">
             <h3 className="text-lg font-semibold mb-4">Order Type</h3>
 
             <div className="grid grid-cols-2 gap-3">
@@ -273,7 +289,7 @@ export default function Checkout() {
           </section>
 
           {/* Contact Details */}
-          <section>
+          <section className="lg:bg-white lg:rounded-xl lg:p-6 lg:border lg:border-gray-200">
             <h3 className="text-lg font-semibold mb-4">
               {orderType === 'delivery' ? 'Delivery Details' : 'Contact Details'}
             </h3>
@@ -334,7 +350,7 @@ export default function Checkout() {
           </section>
 
           {/* Payment Method */}
-          <section>
+          <section className="lg:bg-white lg:rounded-xl lg:p-6 lg:border lg:border-gray-200">
             <h3 className="text-lg font-semibold mb-4">Payment Method</h3>
 
             <div className="space-y-3">
@@ -398,12 +414,12 @@ export default function Checkout() {
           </div>
 
           {/* Order Summary - Sidebar on Desktop */}
-          <div className="mt-6 lg:mt-0 lg:w-80 lg:flex-shrink-0">
-            <div className="lg:sticky lg:top-24">
-              <section>
+          <div className="mt-6 lg:mt-0 lg:w-96 lg:flex-shrink-0">
+            <div className="lg:sticky lg:top-8">
+              <section className="lg:bg-white lg:rounded-xl lg:p-6 lg:border lg:border-gray-200">
                 <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
 
-                <div className="bg-gray-50 lg:bg-white lg:border lg:border-gray-200 rounded-xl p-4">
+                <div className="bg-gray-50 lg:bg-gray-50 rounded-xl p-4">
                   {items.map((item) => (
                     <div key={item.id} className="flex justify-between py-2">
                       <span className="text-gray-600">

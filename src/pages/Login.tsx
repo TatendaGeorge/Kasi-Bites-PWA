@@ -4,6 +4,7 @@ import { AlertCircle, Eye, EyeOff, X } from 'lucide-react';
 import { cn, validateEmail } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
+import Logo from '@/assets/kasibites-logo.svg';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -52,9 +53,9 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-orange-500 flex flex-col">
-      {/* Top Section with Close Button */}
-      <div className="p-4 safe-top">
+    <div className="min-h-screen bg-orange-500 lg:bg-gray-50 flex flex-col lg:items-center lg:justify-center">
+      {/* Mobile: Top Section with Close Button */}
+      <div className="p-4 safe-top lg:hidden">
         <button
           onClick={() => navigate('/')}
           className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
@@ -64,15 +65,31 @@ export default function Login() {
         </button>
       </div>
 
-      {/* Logo Section */}
-      <div className="px-6 pt-4 pb-8">
+      {/* Mobile: Logo Section */}
+      <div className="px-6 pt-4 pb-8 lg:hidden">
         <h1 className="text-4xl font-bold text-white mb-2">Welcome</h1>
         <h1 className="text-4xl font-black text-white">back</h1>
         <p className="text-white/70 mt-2">Sign in to your account</p>
       </div>
 
-      {/* Form Card */}
-      <div className="flex-1 bg-white rounded-t-3xl px-6 pt-8 pb-6">
+      {/* Form Card - Mobile: slide up, Desktop: centered card */}
+      <div className="flex-1 bg-white rounded-t-3xl px-6 pt-8 pb-6 lg:flex-none lg:w-full lg:max-w-md lg:rounded-2xl lg:shadow-xl lg:border lg:border-gray-200 lg:p-8">
+        {/* Desktop: Logo and Header */}
+        <div className="hidden lg:block mb-8">
+          <button
+            onClick={() => navigate('/')}
+            className="absolute top-4 right-4 w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5 text-gray-600" />
+          </button>
+          <Link to="/" className="flex justify-center mb-6">
+            <img src={Logo} alt="Kasi Bites" className="h-16" />
+          </Link>
+          <h1 className="text-2xl font-bold text-center text-gray-900">Welcome back</h1>
+          <p className="text-gray-500 text-center mt-1">Sign in to your account</p>
+        </div>
+
         {/* Error Message */}
         {error && (
           <div className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
@@ -176,12 +193,22 @@ export default function Login() {
         </button>
 
         {/* Register Link */}
-        <p className="mt-6 text-center text-gray-600 safe-bottom">
+        <p className="mt-6 text-center text-gray-600 safe-bottom lg:pb-0">
           Don't have an account?{' '}
           <Link to="/register" className="text-orange-500 font-semibold hover:text-orange-600">
             Sign up
           </Link>
         </p>
+      </div>
+
+      {/* Desktop: Back to home link */}
+      <div className="hidden lg:block mt-6">
+        <button
+          onClick={() => navigate('/')}
+          className="text-gray-500 hover:text-gray-700 text-sm"
+        >
+          ← Back to home
+        </button>
       </div>
     </div>
   );

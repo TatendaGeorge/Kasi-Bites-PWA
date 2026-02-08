@@ -41,7 +41,7 @@ export function Header({
   return (
     <header
       className={cn(
-        'sticky top-0 z-40',
+        'sticky top-0 z-40 lg:hidden',
         transparent ? 'bg-transparent' : 'bg-white border-b border-gray-100',
         'safe-top',
         className
