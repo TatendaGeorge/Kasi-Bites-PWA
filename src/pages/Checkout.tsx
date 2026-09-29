@@ -43,13 +43,6 @@ export default function Checkout() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storeSlug]);
 
-  // No store in the cart (e.g. direct navigation with an empty cart) — nothing to check out.
-  useEffect(() => {
-    if (items.length === 0) {
-      navigate('/cart', { replace: true });
-    }
-  }, [items.length, navigate]);
-
   const [orderType, setOrderType] = useState<'delivery' | 'collection'>('delivery');
   const [formData, setFormData] = useState({
     fullName: user?.name || '',
