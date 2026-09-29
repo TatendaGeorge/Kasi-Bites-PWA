@@ -1,4 +1,4 @@
-import type { ApiOrder, ApiProduct, CreateOrderData, User } from '@/types';
+import type { ApiOrder, ApiProduct, ApiStore, CreateOrderData, User } from '@/types';
 import { API_BASE_URL, STORAGE_KEYS } from '@/lib/constants';
 
 interface ApiResponse<T> {
@@ -126,9 +126,22 @@ class ApiService {
     });
   }
 
-  // Products
-  async getProducts() {
-    return this.request<{ products: ApiProduct[] }>('/products');
+  // Store discovery (public)
+  async getStores() {
+    return this.request<{ data: ApiStore[] }>('/stores');
+  }
+
+  async getStore(slug: string) {
+    return this.request<{ data: ApiStore }>(`/stores/${slug}`);
+  }
+
+  // Products (store-scoped)
+  async getStoreProducts(slug: string) {
+    return this.request<{ products: ApiProduct[] }>(`/stores/${slug}/products`);
+  }
+
+  async getStoreProduct(slug: string, productId: string | number) {
+    return this.request<{ product: ApiProduct }>(`/stores/${slug}/products/${productId}`);
   }
 
   // Orders
@@ -153,24 +166,6 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify({ token, platform }),
     });
-  }
-
-  // Store settings (public)
-  async getStoreSettings() {
-    return this.request<{
-      data: {
-        store_name: string;
-        store_address: string | null;
-        store_phone: string | null;
-        store_latitude: number | null;
-        store_longitude: number | null;
-        delivery_fee: number;
-        delivery_radius_km: number;
-        minimum_order_amount: number;
-        is_store_open: boolean;
-        operating_hours: Record<string, { open: string; close: string; is_open: boolean }> | null;
-      };
-    }>('/store/settings');
   }
 
   // Web Push notifications

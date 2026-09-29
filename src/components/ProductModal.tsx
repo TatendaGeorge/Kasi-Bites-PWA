@@ -2,17 +2,18 @@ import { useState, useEffect } from 'react';
 import { X, Minus, Plus, Check } from 'lucide-react';
 import { cn, formatSize } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
-import type { ApiProduct, ApiProductSize, ApiAddon, FriesSize, CartItemAddon } from '@/types';
+import type { ApiProduct, ApiProductSize, ApiAddon, ApiStore, FriesSize, CartItemAddon } from '@/types';
 import { MIN_QUANTITY, MAX_QUANTITY } from '@/lib/constants';
 
 interface ProductModalProps {
   product: ApiProduct;
+  store: ApiStore;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
-  const { addToCart } = useCart();
+export function ProductModal({ product, store, isOpen, onClose }: ProductModalProps) {
+  const { addToCart, replaceCart } = useCart();
   const [selectedSize, setSelectedSize] = useState<ApiProductSize | null>(null);
   const [selectedAddons, setSelectedAddons] = useState<ApiAddon[]>([]);
   const [quantity, setQuantity] = useState(1);
@@ -70,15 +71,28 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
       ? product.sale_price
       : selectedSize.price;
 
-    addToCart(
-      product.name,
-      formatSize(selectedSize.size) as FriesSize,
+    const input = {
+      name: product.name,
+      size: formatSize(selectedSize.size) as FriesSize,
       quantity,
-      itemPrice,
-      selectedSize.id,
-      cartAddons.length > 0 ? cartAddons : undefined,
-      product.image_url
-    );
+      price: itemPrice,
+      productSizeId: selectedSize.id,
+      addons: cartAddons.length > 0 ? cartAddons : undefined,
+      imageUrl: product.image_url,
+      storeId: store.id,
+      storeSlug: store.slug,
+      storeName: store.name,
+    };
+
+    const result = addToCart(input);
+
+    if (!result.ok) {
+      const confirmed = window.confirm(
+        `Your cart has items from ${result.existingStoreName}. Starting an order from ${store.name} will clear your current cart. Continue?`
+      );
+      if (!confirmed) return;
+      replaceCart(input);
+    }
 
     setIsAdded(true);
     setTimeout(() => {

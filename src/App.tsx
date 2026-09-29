@@ -3,13 +3,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import { AuthProvider } from '@/context/AuthContext';
 import { CartProvider } from '@/context/CartContext';
-import { StoreSettingsProvider } from '@/context/StoreSettingsContext';
+import { StoreProvider } from '@/context/StoreContext';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { DesktopHeader } from '@/components/layout/DesktopHeader';
 import { DesktopSidebar } from '@/components/layout/DesktopSidebar';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import {
   Home,
+  StoreMenu,
   ProductDetail,
   Cart,
   Checkout,
@@ -66,7 +67,8 @@ function AppLayout() {
             <Route path="/profile" element={<Profile />} />
 
             {/* Stack Routes */}
-            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/store/:slug" element={<StoreMenu />} />
+            <Route path="/store/:slug/product/:id" element={<ProductDetail />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/order-confirmation/:orderNumber" element={<OrderConfirmation />} />
@@ -106,13 +108,13 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <ScrollToTop />
-        <StoreSettingsProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <StoreProvider>
             <CartProvider>
               <AppLayout />
             </CartProvider>
-          </AuthProvider>
-        </StoreSettingsProvider>
+          </StoreProvider>
+        </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );

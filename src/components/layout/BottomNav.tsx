@@ -4,13 +4,13 @@ import { cn } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
 
 const NAV_ITEMS = [
-  { path: '/', icon: Home, label: 'Home' },
+  { path: '/', icon: Home, label: 'Stores' },
   { path: '/orders', icon: ClipboardList, label: 'Orders' },
   { path: '/profile', icon: User, label: 'Account' },
 ];
 
 // Routes where bottom nav should be hidden
-const HIDDEN_ROUTES = ['/cart', '/checkout', '/login', '/register', '/welcome', '/product', '/order-confirmation', '/order-tracking'];
+const HIDDEN_ROUTES = ['/cart', '/checkout', '/login', '/register', '/welcome', '/store/', '/order-confirmation', '/order-tracking'];
 
 export function BottomNav() {
   const location = useLocation();

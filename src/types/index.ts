@@ -26,12 +26,28 @@ export interface CartItem {
   id: string;
   productId: string;
   productSizeId?: number;
+  storeId: number;
+  storeSlug: string;
+  storeName: string;
   name: string;
   size: FriesSize;
   quantity: number;
   price: number;
   addons?: CartItemAddon[];
   imageUrl?: string | null;
+}
+
+export interface AddToCartInput {
+  name: string;
+  size: FriesSize;
+  quantity: number;
+  price: number;
+  productSizeId?: number;
+  addons?: CartItemAddon[];
+  imageUrl?: string | null;
+  storeId: number;
+  storeSlug: string;
+  storeName: string;
 }
 
 // Order Types
@@ -112,22 +128,50 @@ export interface FormErrors {
 }
 
 // Cart Context Types
+export type AddToCartResult = { ok: true } | { ok: false; reason: 'different-store'; existingStoreName: string };
+
 export interface CartContextType {
   items: CartItem[];
   itemCount: number;
   subtotal: number;
   deliveryFee: number;
   total: number;
-  addToCart: (name: string, size: FriesSize, quantity: number, price: number, productSizeId?: number, addons?: CartItemAddon[], imageUrl?: string | null) => void;
+  storeId: number | null;
+  storeSlug: string | null;
+  storeName: string | null;
+  addToCart: (input: AddToCartInput) => AddToCartResult;
+  replaceCart: (input: AddToCartInput) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
   removeFromCart: (itemId: string) => void;
   clearCart: () => void;
   isCartEmpty: boolean;
 }
 
+// API Store Types
+export interface ApiStore {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  logo_url: string | null;
+  cover_image_url: string | null;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  delivery_fee: number;
+  delivery_radius_km: number;
+  minimum_order_amount: number;
+  operating_hours: Record<string, { open: string; close: string; is_open: boolean }> | null;
+  is_open: boolean;
+  is_active: boolean;
+}
+
 // API Product Types
 export interface ApiProduct {
   id: number;
+  store_id: number;
   name: string;
   description: string | null;
   image_url: string | null;
@@ -197,8 +241,10 @@ export interface ApiError {
 
 // Create Order Data
 export interface CreateOrderData {
+  store_id: number;
   customer_name: string;
   customer_phone: string;
+  order_type: 'delivery' | 'collection';
   delivery_address: string;
   delivery_latitude?: number;
   delivery_longitude?: number;

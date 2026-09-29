@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { X, Minus, Plus, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
-import { useDeliverySettings } from '@/context/StoreSettingsContext';
 import { Button } from '@/components/ui/Button';
 import { MIN_QUANTITY, MAX_QUANTITY } from '@/lib/constants';
 
@@ -15,10 +14,8 @@ interface CartDropdownProps {
 export function CartDropdown({ isOpen, onClose }: CartDropdownProps) {
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { items, itemCount, subtotal, isCartEmpty, updateQuantity, removeFromCart } = useCart();
-  const { deliveryFee: configuredDeliveryFee } = useDeliverySettings();
+  const { items, itemCount, subtotal, deliveryFee, isCartEmpty, updateQuantity, removeFromCart } = useCart();
 
-  const deliveryFee = isCartEmpty ? 0 : configuredDeliveryFee;
   const total = subtotal + deliveryFee;
 
   // Handle click outside

@@ -4,7 +4,7 @@ import { CreditCard, Banknote, Truck, Store, AlertTriangle, Loader2, ArrowLeft }
 import { cn, validateSAPhoneNumber } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
-import { useDeliverySettings } from '@/context/StoreSettingsContext';
+import { useStore, useDeliverySettings } from '@/context/StoreContext';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -27,8 +27,9 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 
 export default function Checkout() {
   const navigate = useNavigate();
-  const { items, subtotal, clearCart } = useCart();
+  const { items, subtotal, clearCart, storeId, storeSlug } = useCart();
   const { user, isAuthenticated, updateProfile } = useAuth();
+  const { loadStore } = useStore();
   const {
     isLoading: isLoadingSettings,
     deliveryFee: configuredDeliveryFee,
@@ -36,6 +37,18 @@ export default function Checkout() {
     storeLatitude: storeLat,
     storeLongitude: storeLng,
   } = useDeliverySettings();
+
+  useEffect(() => {
+    if (storeSlug) loadStore(storeSlug);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storeSlug]);
+
+  // No store in the cart (e.g. direct navigation with an empty cart) — nothing to check out.
+  useEffect(() => {
+    if (items.length === 0) {
+      navigate('/cart', { replace: true });
+    }
+  }, [items.length, navigate]);
 
   const [orderType, setOrderType] = useState<'delivery' | 'collection'>('delivery');
   const [formData, setFormData] = useState({
@@ -129,10 +142,16 @@ export default function Checkout() {
 
     if (!validateForm()) return;
 
+    if (!storeId) {
+      setApiError('Your cart is missing store information. Please go back to your cart and try again.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const orderData = {
+        store_id: storeId,
         customer_name: formData.fullName,
         customer_phone: formData.phoneNumber,
         order_type: orderType,

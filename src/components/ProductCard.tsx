@@ -6,12 +6,13 @@ import { Badge } from './ui/Badge';
 
 interface ProductCardProps {
   product: ApiProduct;
+  storeSlug: string;
   rank?: number;
   className?: string;
   onOpenModal?: (product: ApiProduct) => void;
 }
 
-export function ProductCard({ product, rank, className, onOpenModal }: ProductCardProps) {
+export function ProductCard({ product, storeSlug, rank, className, onOpenModal }: ProductCardProps) {
   const navigate = useNavigate();
 
   // Get the lowest price from all sizes
@@ -28,7 +29,7 @@ export function ProductCard({ product, rank, className, onOpenModal }: ProductCa
     if (window.innerWidth >= 1024 && onOpenModal) {
       onOpenModal(product);
     } else {
-      navigate(`/product/${product.id}`, { state: { product } });
+      navigate(`/store/${storeSlug}/product/${product.id}`, { state: { product } });
     }
   };
 

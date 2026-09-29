@@ -1,19 +1,23 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
-import { useDeliverySettings } from '@/context/StoreSettingsContext';
+import { useStore } from '@/context/StoreContext';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/Button';
 import { CartItem } from '@/components/CartItem';
 
 export default function Cart() {
   const navigate = useNavigate();
-  const { items, itemCount, subtotal, isCartEmpty, updateQuantity, removeFromCart } = useCart();
-  const { deliveryFee: configuredDeliveryFee } = useDeliverySettings();
-
-  // Use delivery fee from settings, 0 if cart is empty
-  const deliveryFee = isCartEmpty ? 0 : configuredDeliveryFee;
+  const { items, itemCount, subtotal, deliveryFee, isCartEmpty, storeSlug, updateQuantity, removeFromCart } = useCart();
+  const { loadStore } = useStore();
   const total = subtotal + deliveryFee;
+  const browseHref = storeSlug ? `/store/${storeSlug}` : '/';
+
+  useEffect(() => {
+    if (storeSlug) loadStore(storeSlug);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storeSlug]);
 
   if (isCartEmpty) {
     return (
@@ -57,7 +61,7 @@ export default function Cart() {
 
           {/* Add More Items Button */}
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate(browseHref)}
             className="w-full flex items-center justify-center gap-2 py-4 text-orange-500 font-medium"
           >
             <Plus className="w-5 h-5" />

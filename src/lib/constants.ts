@@ -12,8 +12,7 @@ export const STORAGE_KEYS = {
   CART: 'cart',
 } as const;
 
-// Delivery Configuration
-export const DELIVERY_FEE = 30;
+// Delivery Configuration (delivery fee now comes from the active store, see StoreContext)
 export const MIN_QUANTITY = 1;
 export const MAX_QUANTITY = 10;
 

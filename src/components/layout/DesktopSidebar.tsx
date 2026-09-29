@@ -4,13 +4,13 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 
 const NAV_ITEMS = [
-  { path: '/', icon: Home, label: 'Home' },
+  { path: '/', icon: Home, label: 'Stores' },
   { path: '/orders', icon: ClipboardList, label: 'Orders' },
   { path: '/profile', icon: User, label: 'Account' },
 ];
 
 // Routes where sidebar should be hidden
-const HIDDEN_ROUTES = ['/login', '/register', '/welcome', '/product/', '/cart', '/checkout', '/order-confirmation', '/order-tracking'];
+const HIDDEN_ROUTES = ['/login', '/register', '/welcome', '/store/', '/cart', '/checkout', '/order-confirmation', '/order-tracking'];
 
 export function DesktopSidebar() {
   const location = useLocation();

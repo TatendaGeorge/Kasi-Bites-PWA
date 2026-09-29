@@ -3,25 +3,27 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { X, Share2, Minus, Plus, Check } from 'lucide-react';
 import { cn, formatSize } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
+import { useStore } from '@/context/StoreContext';
 import { Button } from '@/components/ui/Button';
 import api from '@/services/api';
 import type { ApiProduct, ApiProductSize, ApiAddon, FriesSize, CartItemAddon } from '@/types';
 import { MIN_QUANTITY, MAX_QUANTITY } from '@/lib/constants';
 
 export default function ProductDetail() {
-  const { id } = useParams<{ id: string }>();
+  const { slug, id } = useParams<{ slug: string; id: string }>();
   const location = useLocation();
   const navigate = useNavigate();
-  const { addToCart } = useCart();
+  const { addToCart, replaceCart } = useCart();
+  const { store, loadStore } = useStore();
 
   // Safe back navigation - handles PWA opened directly to this page
   const handleBack = useCallback(() => {
     if (window.history.length > 1 && location.key !== 'default') {
       navigate(-1);
     } else {
-      navigate('/', { replace: true });
+      navigate(slug ? `/store/${slug}` : '/', { replace: true });
     }
-  }, [navigate, location.key]);
+  }, [navigate, location.key, slug]);
 
   const [product, setProduct] = useState<ApiProduct | null>(
     (location.state as { product?: ApiProduct })?.product || null
@@ -33,26 +35,26 @@ export default function ProductDetail() {
   const [isAdded, setIsAdded] = useState(false);
 
   useEffect(() => {
-    if (!product && id) {
-      fetchProduct();
+    if (slug) loadStore(slug);
+
+    if (!product && id && slug) {
+      fetchProduct(slug, id);
     } else if (product && product.sizes.length > 0) {
       // Default to medium or first size
       const defaultSize = product.sizes.find(s => s.size === 'medium') || product.sizes[0];
       setSelectedSize(defaultSize);
     }
-  }, [product, id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product, id, slug]);
 
-  const fetchProduct = async () => {
+  const fetchProduct = async (storeSlug: string, productId: string) => {
     setIsLoading(true);
     try {
-      const response = await api.getProducts();
-      if (response.data?.products) {
-        const found = response.data.products.find(p => p.id === Number(id));
-        if (found) {
-          setProduct(found);
-          const defaultSize = found.sizes.find(s => s.size === 'medium') || found.sizes[0];
-          setSelectedSize(defaultSize);
-        }
+      const response = await api.getStoreProduct(storeSlug, productId);
+      if (response.data?.product) {
+        setProduct(response.data.product);
+        const defaultSize = response.data.product.sizes.find(s => s.size === 'medium') || response.data.product.sizes[0];
+        setSelectedSize(defaultSize);
       }
     } catch (err) {
       console.error('Failed to fetch product:', err);
@@ -72,7 +74,7 @@ export default function ProductDetail() {
   };
 
   const handleAddToCart = () => {
-    if (!product || !selectedSize) return;
+    if (!product || !selectedSize || !store) return;
 
     // Convert selected addons to cart format
     const cartAddons: CartItemAddon[] = selectedAddons.map(addon => ({
@@ -86,15 +88,28 @@ export default function ProductDetail() {
       ? product.sale_price
       : selectedSize.price;
 
-    addToCart(
-      product.name,
-      formatSize(selectedSize.size) as FriesSize,
+    const input = {
+      name: product.name,
+      size: formatSize(selectedSize.size) as FriesSize,
       quantity,
-      itemPrice,
-      selectedSize.id,
-      cartAddons.length > 0 ? cartAddons : undefined,
-      product.image_url
-    );
+      price: itemPrice,
+      productSizeId: selectedSize.id,
+      addons: cartAddons.length > 0 ? cartAddons : undefined,
+      imageUrl: product.image_url,
+      storeId: store.id,
+      storeSlug: store.slug,
+      storeName: store.name,
+    };
+
+    const result = addToCart(input);
+
+    if (!result.ok) {
+      const confirmed = window.confirm(
+        `Your cart has items from ${result.existingStoreName}. Starting an order from ${store.name} will clear your current cart. Continue?`
+      );
+      if (!confirmed) return;
+      replaceCart(input);
+    }
 
     // Show added feedback
     setIsAdded(true);
