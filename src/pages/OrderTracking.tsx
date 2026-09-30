@@ -1,41 +1,30 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { CheckCircle, Circle, Clock, MapPin, Phone, Loader2 } from 'lucide-react';
-import { cn, formatDateTime } from '@/lib/utils';
+import { Loader2 } from 'lucide-react';
+import { formatDateTime, getStatusTone } from '@/lib/utils';
 import { Header } from '@/components/layout/Header';
-import { Button } from '@/components/ui/Button';
-import { Badge, getStatusVariant } from '@/components/ui/Badge';
 import api from '@/services/api';
 import type { ApiOrder, OrderStatus } from '@/types';
+import { Button, Badge, Icon } from '@/components/shisa';
 
-const STATUS_ORDER: OrderStatus[] = [
-  'pending',
-  'confirmed',
-  'preparing',
-  'ready',
-  'out_for_delivery',
-  'delivered',
-];
+const STATUS_ORDER: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready', 'out_for_delivery', 'delivered'];
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
-  pending: 'Order Placed',
+  pending: 'Order placed',
   confirmed: 'Confirmed',
   preparing: 'Preparing',
-  ready: 'Ready for Pickup',
-  out_for_delivery: 'Out for Delivery',
+  ready: 'Ready for pickup',
+  out_for_delivery: 'Out for delivery',
   delivered: 'Delivered',
   cancelled: 'Cancelled',
 };
 
-// Status-specific colors matching admin Kanban
-const STATUS_COLORS: Record<OrderStatus, { bg: string; text: string; line: string }> = {
-  pending: { bg: 'bg-yellow-500', text: 'text-yellow-600', line: 'bg-yellow-500' },
-  confirmed: { bg: 'bg-blue-500', text: 'text-blue-600', line: 'bg-blue-500' },
-  preparing: { bg: 'bg-purple-500', text: 'text-purple-600', line: 'bg-purple-500' },
-  ready: { bg: 'bg-green-500', text: 'text-green-600', line: 'bg-green-500' },
-  out_for_delivery: { bg: 'bg-orange-500', text: 'text-orange-600', line: 'bg-orange-500' },
-  delivered: { bg: 'bg-green-500', text: 'text-green-600', line: 'bg-green-500' },
-  cancelled: { bg: 'bg-red-500', text: 'text-red-600', line: 'bg-red-500' },
+const TONE_COLOR: Record<string, string> = {
+  brand: 'var(--brand)',
+  mielie: 'var(--mielie)',
+  success: 'var(--success)',
+  danger: 'var(--danger)',
+  neutral: 'var(--ink-muted)',
 };
 
 export default function OrderTracking() {
@@ -49,7 +38,6 @@ export default function OrderTracking() {
   useEffect(() => {
     if (orderNumber) {
       fetchOrder();
-      // Poll for updates every 30 seconds
       const interval = setInterval(fetchOrder, 30000);
       return () => clearInterval(interval);
     }
@@ -66,7 +54,7 @@ export default function OrderTracking() {
       } else {
         setError(response.error || 'Order not found');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to load order');
     } finally {
       setIsLoading(false);
@@ -75,19 +63,21 @@ export default function OrderTracking() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+      <div className="flex items-center justify-center" style={{ minHeight: '100dvh' }}>
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--flame)' }} />
       </div>
     );
   }
 
   if (error || !order) {
     return (
-      <div className="min-h-screen bg-white flex flex-col">
-        <Header title="Track Order" showBack />
+      <div className="flex flex-col" style={{ minHeight: '100dvh', background: 'var(--bg)' }}>
+        <Header title="Track order" showBack />
         <div className="flex-1 flex flex-col items-center justify-center p-4">
-          <p className="text-gray-600 mb-4">{error || 'Order not found'}</p>
-          <Button onClick={() => navigate('/')}>Go Home</Button>
+          <p className="mb-4" style={{ color: 'var(--ink-muted)' }}>
+            {error || 'Order not found'}
+          </p>
+          <Button onClick={() => navigate('/')}>Go home</Button>
         </div>
       </div>
     );
@@ -98,81 +88,66 @@ export default function OrderTracking() {
   const isDelivered = order.status === 'delivered';
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <Header title="Track Order" showBack />
+    <div className="flex flex-col" style={{ minHeight: '100dvh', background: 'var(--bg)' }}>
+      <Header title="Track order" showBack />
 
       <div className="flex-1 px-4 lg:px-8 py-6 overflow-y-auto lg:max-w-5xl lg:mx-auto lg:w-full">
         <div className="lg:flex lg:gap-8">
-          {/* Left Column: Status Timeline */}
           <div className="flex-1">
-            {/* Order Header */}
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h2 className="text-xl font-bold">#{order.order_number}</h2>
-                <p className="text-sm text-gray-500">
+                <h2 style={{ font: '600 22px/28px var(--font-display)', color: 'var(--ink)' }}>#{order.order_number}</h2>
+                <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
                   {formatDateTime(order.created_at)}
                 </p>
               </div>
-              <Badge variant={getStatusVariant(order.status)}>
-                {order.status_label}
-              </Badge>
+              <Badge tone={getStatusTone(order.status)}>{order.status_label}</Badge>
             </div>
 
-            {/* Status Timeline */}
             {!isCancelled && (
               <div className="mb-8">
-                <h3 className="font-semibold mb-4">Order Status</h3>
+                <h3 className="mb-4" style={{ font: '600 16px/22px var(--font-display)', color: 'var(--ink)' }}>
+                  Order status
+                </h3>
 
                 <div className="relative">
                   {STATUS_ORDER.map((status, index) => {
                     const isCompleted = index <= currentStatusIndex;
                     const isCurrent = index === currentStatusIndex;
                     const isLast = index === STATUS_ORDER.length - 1;
-                    const statusColor = STATUS_COLORS[status];
+                    const color = TONE_COLOR[getStatusTone(status)];
 
                     return (
                       <div key={status} className="flex items-start gap-4 pb-6 last:pb-0">
-                        {/* Status indicator */}
                         <div className="relative">
                           <div
-                            className={cn(
-                              'w-8 h-8 rounded-full flex items-center justify-center text-white',
-                              isCompleted
-                                ? statusColor.bg
-                                : 'bg-gray-200 text-gray-400'
-                            )}
+                            className="flex items-center justify-center"
+                            style={{
+                              width: 32,
+                              height: 32,
+                              borderRadius: '50%',
+                              background: isCompleted ? color : 'var(--surface-sunken)',
+                              color: isCompleted ? 'var(--on-brand)' : 'var(--ink-subtle)',
+                            }}
                           >
-                            {isCompleted ? (
-                              <CheckCircle className="w-5 h-5" />
-                            ) : (
-                              <Circle className="w-5 h-5" />
-                            )}
+                            <Icon name="check" size={16} strokeWidth={2.5} />
                           </div>
 
-                          {/* Connecting line */}
                           {!isLast && (
                             <div
-                              className={cn(
-                                'absolute left-1/2 top-8 w-0.5 h-6 -translate-x-1/2',
-                                isCompleted ? statusColor.line : 'bg-gray-200'
-                              )}
+                              className="absolute left-1/2 top-8 -translate-x-1/2"
+                              style={{ width: 2, height: 24, background: isCompleted ? color : 'var(--line)' }}
                             />
                           )}
                         </div>
 
-                        {/* Status text */}
                         <div className="flex-1 pt-1">
-                          <p
-                            className={cn(
-                              'font-medium',
-                              isCompleted ? 'text-black' : 'text-gray-400'
-                            )}
-                          >
+                          <p style={{ font: '500 15px/22px var(--font-body)', color: isCompleted ? 'var(--ink)' : 'var(--ink-subtle)' }}>
                             {STATUS_LABELS[status]}
                           </p>
                           {isCurrent && !isDelivered && (
-                            <p className={cn('text-sm animate-pulse', statusColor.text)}>
-                              In progress...
+                            <p className="text-sm animate-pulse" style={{ color }}>
+                              In progress…
                             </p>
                           )}
                         </div>
@@ -183,47 +158,52 @@ export default function OrderTracking() {
               </div>
             )}
 
-            {/* Cancelled Notice */}
             {isCancelled && (
-              <div className="bg-red-50 rounded-xl p-4 mb-6">
-                <p className="text-red-800 font-medium">This order has been cancelled</p>
+              <div className="mb-6" style={{ background: 'var(--brand-soft)', borderRadius: 'var(--radius-md)', padding: 16 }}>
+                <p style={{ font: '500 15px/22px var(--font-body)', color: 'var(--danger)' }}>This order has been cancelled</p>
                 {order.notes && (
-                  <p className="text-red-600 text-sm mt-1">{order.notes}</p>
+                  <p className="text-sm mt-1" style={{ color: 'var(--danger)' }}>
+                    {order.notes}
+                  </p>
                 )}
               </div>
             )}
 
-            {/* Delivery Details */}
             <div className="mb-6">
-              <h3 className="font-semibold mb-4">Delivery Details</h3>
+              <h3 className="mb-4" style={{ font: '600 16px/22px var(--font-display)', color: 'var(--ink)' }}>
+                Delivery details
+              </h3>
 
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <Icon name="map-pin" size={20} style={{ color: 'var(--ink-subtle)', marginTop: 2 }} />
                   <div>
-                    <p className="text-sm text-gray-500">Delivery Address</p>
-                    <p className="font-medium">{order.delivery_address}</p>
+                    <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+                      Delivery address
+                    </p>
+                    <p style={{ font: '500 15px/22px var(--font-body)', color: 'var(--ink)' }}>{order.delivery_address}</p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <Phone className="w-5 h-5 text-gray-400 mt-0.5" />
+                  <Icon name="phone" size={20} style={{ color: 'var(--ink-subtle)', marginTop: 2 }} />
                   <div>
-                    <p className="text-sm text-gray-500">Contact</p>
-                    <p className="font-medium">{order.customer_phone}</p>
+                    <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+                      Contact
+                    </p>
+                    <p style={{ font: '500 15px/22px var(--font-body)', color: 'var(--ink)' }}>{order.customer_phone}</p>
                   </div>
                 </div>
 
                 {order.estimated_delivery_at && !isDelivered && !isCancelled && (
                   <div className="flex items-start gap-3">
-                    <Clock className="w-5 h-5 text-gray-400 mt-0.5" />
+                    <Icon name="clock" size={20} style={{ color: 'var(--ink-subtle)', marginTop: 2 }} />
                     <div>
-                      <p className="text-sm text-gray-500">Estimated Delivery</p>
-                      <p className="font-medium">
-                        {new Date(order.estimated_delivery_at).toLocaleTimeString('en-ZA', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
+                      <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+                        Estimated delivery
+                      </p>
+                      <p style={{ font: '500 15px/22px var(--font-body)', color: 'var(--ink)' }}>
+                        {new Date(order.estimated_delivery_at).toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
                   </div>
@@ -232,22 +212,26 @@ export default function OrderTracking() {
             </div>
           </div>
 
-          {/* Right Column: Order Items */}
           <div className="lg:w-80 lg:flex-shrink-0">
-            <div className="bg-gray-50 lg:bg-white lg:border lg:border-gray-200 rounded-xl p-4 lg:sticky lg:top-24">
-              <h3 className="font-semibold mb-3">Order Items</h3>
+            <div
+              className="lg:sticky lg:top-24"
+              style={{ background: 'var(--surface-sunken)', borderRadius: 'var(--radius-md)', padding: 16 }}
+            >
+              <h3 className="mb-3" style={{ font: '600 16px/22px var(--font-display)', color: 'var(--ink)' }}>
+                Order items
+              </h3>
 
               {order.items.map((item) => (
                 <div key={item.id} className="flex justify-between py-2 text-sm">
-                  <span className="text-gray-600">
+                  <span style={{ color: 'var(--ink-muted)' }}>
                     {item.quantity}x {item.product_name} ({item.size})
                   </span>
-                  <span>R{item.total_price.toFixed(2)}</span>
+                  <span style={{ color: 'var(--ink)' }}>R{item.total_price.toFixed(2)}</span>
                 </div>
               ))}
 
-              <div className="border-t border-gray-200 mt-2 pt-2">
-                <div className="flex justify-between font-bold">
+              <div className="mt-2 pt-2" style={{ borderTop: '1px solid var(--line)' }}>
+                <div className="flex justify-between" style={{ font: '700 16px/22px var(--font-body)', color: 'var(--ink)' }}>
                   <span>Total</span>
                   <span>R{order.total.toFixed(2)}</span>
                 </div>
@@ -257,15 +241,9 @@ export default function OrderTracking() {
         </div>
       </div>
 
-      {/* Bottom Action */}
       <div className="px-4 lg:px-8 py-4 safe-bottom lg:max-w-5xl lg:mx-auto lg:w-full">
-        <Button
-          onClick={() => navigate('/')}
-          variant="secondary"
-          fullWidth
-          className="lg:w-auto lg:px-8"
-        >
-          Order More
+        <Button onClick={() => navigate('/')} variant="secondary" block>
+          Order more
         </Button>
       </div>
     </div>

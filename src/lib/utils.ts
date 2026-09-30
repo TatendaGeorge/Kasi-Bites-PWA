@@ -97,18 +97,18 @@ export function truncate(str: string, maxLength: number): string {
   return str.slice(0, maxLength) + '...';
 }
 
-// Get order status color
-export function getOrderStatusColor(status: string): string {
-  const colors: Record<string, string> = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    confirmed: 'bg-blue-100 text-blue-800',
-    preparing: 'bg-orange-100 text-orange-800',
-    ready: 'bg-purple-100 text-purple-800',
-    out_for_delivery: 'bg-indigo-100 text-indigo-800',
-    delivered: 'bg-green-100 text-green-800',
-    cancelled: 'bg-red-100 text-red-800',
+// Get the Shisa Badge tone for an order status
+export function getStatusTone(status: string): 'neutral' | 'brand' | 'mielie' | 'success' | 'danger' {
+  const tones: Record<string, 'neutral' | 'brand' | 'mielie' | 'success' | 'danger'> = {
+    pending: 'brand',
+    confirmed: 'brand',
+    preparing: 'mielie',
+    ready: 'mielie',
+    out_for_delivery: 'mielie',
+    delivered: 'success',
+    cancelled: 'danger',
   };
-  return colors[status] || 'bg-gray-100 text-gray-800';
+  return tones[status] || 'neutral';
 }
 
 // Local storage helpers with error handling

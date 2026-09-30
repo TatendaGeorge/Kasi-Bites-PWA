@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, ShoppingBag, Loader2, RefreshCw, Store as StoreIcon } from 'lucide-react';
-import Logo from '@/assets/kasibites-logo.svg';
+import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import api from '@/services/api';
 import type { ApiStore } from '@/types';
+import { MobileHeader, SearchField, SectionHeader, StoreCard, PromoBanner, Button } from '@/components/shisa';
 
 export default function Home() {
+  const navigate = useNavigate();
   const { itemCount } = useCart();
   const [stores, setStores] = useState<ApiStore[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,143 +28,84 @@ export default function Home() {
       } else if (response.error) {
         setError(response.error);
       }
-    } catch (err) {
+    } catch {
       setError('Failed to load stores');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const filteredStores = useMemo(() => {
-    return stores.filter((store) =>
-      store.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [stores, searchQuery]);
+  const filteredStores = useMemo(
+    () => stores.filter((store) => store.name.toLowerCase().includes(searchQuery.toLowerCase())),
+    [stores, searchQuery]
+  );
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+      <div className="flex items-center justify-center" style={{ minHeight: '100dvh' }}>
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--flame)' }} />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <p className="text-gray-600 mb-4">{error}</p>
-        <button
-          onClick={fetchStores}
-          className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Try Again
-        </button>
+      <div className="flex flex-col items-center justify-center p-4" style={{ minHeight: '100dvh' }}>
+        <p className="mb-4" style={{ color: 'var(--ink-muted)' }}>
+          {error}
+        </p>
+        <Button onClick={fetchStores}>Try again</Button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white pb-nav lg:pb-0">
-      {/* Header - Mobile only */}
-      <header className="sticky top-0 z-40 bg-white safe-top lg:hidden">
-        <div className="flex items-center justify-between px-4 py-3">
-          <img src={Logo} alt="Kasi Bites" className="h-10" />
-          <Link
-            to="/cart"
-            className="relative w-10 h-10 flex items-center justify-center"
-          >
-            <ShoppingBag className="w-6 h-6" />
-            {itemCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center">
-                {itemCount > 9 ? '9+' : itemCount}
-              </span>
-            )}
-          </Link>
-        </div>
-
-        {/* Search Bar - Mobile */}
-        <div className="px-4 pb-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search for stores..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-gray-100 rounded-full pl-10 pr-4 py-3 text-base placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black/10"
-            />
-          </div>
-        </div>
-      </header>
-
-      {/* Desktop Header */}
-      <div className="hidden lg:block border-b border-gray-100">
-        <div className="px-8 py-6">
-          <h1 className="text-2xl font-bold mb-1">Stores near you</h1>
-          <p className="text-gray-500">Order from any store on Kasi Bites</p>
-        </div>
-        <div className="px-8 pb-6">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search for stores..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-gray-100 rounded-full pl-10 pr-4 py-3 text-base placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black/10"
-            />
-          </div>
+    <div className="pb-nav lg:pb-0" style={{ minHeight: '100dvh', background: 'var(--bg)' }}>
+      {/* Mobile header */}
+      <div className="lg:hidden safe-top sh-pad" style={{ background: 'var(--bg)' }}>
+        <MobileHeader cart={itemCount} onSearchClick={() => {}} onCartClick={() => navigate('/cart')} />
+        <div className="mt-3">
+          <SearchField
+            placeholder="Search for stores…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
       </div>
 
-      {/* Store Grid */}
-      <section className="py-4 lg:py-6 px-4 lg:px-8">
+      <div className="sh-pad lg:px-8 lg:py-6 sh-stack">
+        <div className="hidden lg:block">
+          <PromoBanner
+            title="Kasi food, hot from the corner."
+            body="Order from spaza shops, kota spots and shisanyama near you."
+            cta="Browse stores"
+            image="shisanyama"
+          />
+        </div>
+
+        <SectionHeader title="Stores near you" action={false} />
+
         {filteredStores.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12" style={{ color: 'var(--ink-muted)' }}>
             No stores found
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
             {filteredStores.map((store) => (
-              <Link
+              <StoreCard
                 key={store.id}
-                to={`/store/${store.slug}`}
-                className="block group rounded-2xl overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow"
-              >
-                <div className="relative w-full aspect-[16/9] bg-gray-100">
-                  {store.cover_image_url ? (
-                    <img
-                      src={store.cover_image_url}
-                      alt={store.name}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-orange-50">
-                      <StoreIcon className="w-10 h-10 text-orange-300" />
-                    </div>
-                  )}
-                  {!store.is_open && (
-                    <span className="absolute top-2 left-2 bg-gray-900/80 text-white text-xs font-semibold px-2 py-1 rounded-full">
-                      Closed
-                    </span>
-                  )}
-                </div>
-                <div className="p-3">
-                  <p className="font-semibold text-base line-clamp-1">{store.name}</p>
-                  {store.description && (
-                    <p className="text-sm text-gray-500 line-clamp-1">{store.description}</p>
-                  )}
-                  <p className="text-xs text-gray-400 mt-1">
-                    Delivery from R{store.delivery_fee.toFixed(2)}
-                  </p>
-                </div>
-              </Link>
+                name={store.name}
+                image={store.cover_image_url || 'shisanyama'}
+                fee={store.delivery_fee > 0 ? `R${store.delivery_fee.toFixed(0)} delivery` : 'R0 delivery'}
+                distance={!store.is_open ? 'Closed' : undefined}
+                cta={false}
+                width="100%"
+                onClick={() => navigate(`/store/${store.slug}`)}
+              />
             ))}
           </div>
         )}
-      </section>
+      </div>
     </div>
   );
 }

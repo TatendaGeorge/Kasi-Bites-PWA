@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
-import { Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { ApiProduct } from '@/types';
-import { Badge } from './ui/Badge';
+import { Badge, Icon } from '@/components/shisa';
+import { art } from '@/components/shisa/art';
 
 interface ProductCardProps {
   product: ApiProduct;
@@ -15,17 +15,12 @@ interface ProductCardProps {
 export function ProductCard({ product, storeSlug, rank, className, onOpenModal }: ProductCardProps) {
   const navigate = useNavigate();
 
-  // Get the lowest price from all sizes
-  const lowestPrice = Math.min(...product.sizes.map(s => s.price));
-
-  // Check if product has a sale price
+  const lowestPrice = Math.min(...product.sizes.map((s) => s.price));
   const hasSalePrice = product.sale_price !== null && product.sale_price !== undefined;
   const displayPrice = hasSalePrice ? product.sale_price : lowestPrice;
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-
-    // Check if we're on desktop (lg breakpoint = 1024px)
     if (window.innerWidth >= 1024 && onOpenModal) {
       onOpenModal(product);
     } else {
@@ -34,12 +29,11 @@ export function ProductCard({ product, storeSlug, rank, className, onOpenModal }
   };
 
   return (
-    <div
-      onClick={handleClick}
-      className={cn('block group cursor-pointer', className)}
-    >
-      {/* Image Container */}
-      <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-gray-100">
+    <div onClick={handleClick} className={cn('block group cursor-pointer', className)}>
+      <div
+        className="relative w-full aspect-square overflow-hidden"
+        style={{ borderRadius: 'var(--radius-md)', background: 'var(--brand-soft)' }}
+      >
         {product.image_url ? (
           <img
             src={product.image_url}
@@ -48,53 +42,45 @@ export function ProductCard({ product, storeSlug, rank, className, onOpenModal }
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-orange-50">
-            <span className="text-5xl">🍟</span>
-          </div>
+          <img src={art('kota')} alt="" className="w-full h-full object-cover" />
         )}
 
-        {/* Sale Badge */}
-        {hasSalePrice && (
-          <Badge variant="warning" className="absolute top-2 left-2">
-            Sale
-          </Badge>
-        )}
+        {hasSalePrice ? (
+          <span className="absolute top-2 left-2">
+            <Badge tone="mielie">Sale</Badge>
+          </span>
+        ) : rank && rank <= 3 ? (
+          <span className="absolute top-2 left-2">
+            <Badge tone="success">#{rank} most liked</Badge>
+          </span>
+        ) : null}
 
-        {/* Rank Badge - only show if no sale badge */}
-        {!hasSalePrice && rank && rank <= 3 && (
-          <Badge variant="success" className="absolute top-2 left-2">
-            #{rank} most liked
-          </Badge>
-        )}
-
-        {/* Add Button */}
         <button
           onClick={handleClick}
-          className={cn(
-            'absolute bottom-2 right-2',
-            'w-8 h-8 bg-white rounded-full shadow-md',
-            'flex items-center justify-center',
-            'transition-transform group-hover:scale-110',
-            'hover:bg-gray-50 active:bg-gray-100'
-          )}
+          className="absolute bottom-2 right-2 flex items-center justify-center transition-transform group-hover:scale-110"
+          style={{
+            width: 32,
+            height: 32,
+            background: 'var(--surface)',
+            borderRadius: '50%',
+            boxShadow: 'var(--shadow-float)',
+          }}
           aria-label={`View ${product.name}`}
         >
-          <Plus className="w-5 h-5" />
+          <Icon name="plus" size={18} />
         </button>
       </div>
 
-      {/* Product Info */}
       <div className="pt-2">
-        <p className="text-base font-medium line-clamp-2">{product.name}</p>
+        <p className="line-clamp-2" style={{ font: '500 16px/22px var(--font-display)', color: 'var(--ink)' }}>
+          {product.name}
+        </p>
         <div className="flex items-center gap-2">
-          <p className={cn(
-            'text-sm',
-            hasSalePrice ? 'text-orange-500 font-semibold' : 'text-gray-500'
-          )}>
+          <p className={hasSalePrice ? 'sh-fee' : ''} style={!hasSalePrice ? { color: 'var(--ink-muted)', fontSize: 14 } : { fontSize: 14 }}>
             R{displayPrice!.toFixed(2)}
           </p>
           {hasSalePrice && (
-            <p className="text-xs text-gray-400 line-through">
+            <p className="text-xs line-through" style={{ color: 'var(--ink-subtle)' }}>
               R{lowestPrice.toFixed(2)}
             </p>
           )}

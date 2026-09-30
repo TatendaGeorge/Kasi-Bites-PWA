@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AlertCircle, Eye, EyeOff, X } from 'lucide-react';
-import { cn, validateEmail } from '@/lib/utils';
+import { AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { validateEmail } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
-import { Button } from '@/components/ui/Button';
-import Logo from '@/assets/kasibites-logo.svg';
+import { Button, Logo, TextField, IconButton } from '@/components/shisa';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -20,7 +19,6 @@ export default function Login() {
     e.preventDefault();
     setError(null);
 
-    // Validation
     if (!email.trim()) {
       setError('Please enter your email');
       return;
@@ -45,7 +43,7 @@ export default function Login() {
       } else {
         setError(result.error || 'Invalid email or password');
       }
-    } catch (err) {
+    } catch {
       setError('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
@@ -53,160 +51,138 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-orange-500 lg:bg-gray-50 flex flex-col lg:items-center lg:justify-center">
-      {/* Mobile: Top Section with Close Button */}
-      <div className="p-4 safe-top lg:hidden">
-        <button
-          onClick={() => navigate('/')}
-          className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
-          aria-label="Close"
-        >
-          <X className="w-5 h-5 text-white" />
-        </button>
+    <div
+      className="flex flex-col lg:items-center lg:justify-center"
+      style={{ minHeight: '100dvh', background: 'var(--bg)' }}
+    >
+      {/* Mobile: top bar with close */}
+      <div className="p-4 safe-top lg:hidden flex justify-end">
+        <IconButton icon="x" label="Close" flat onClick={() => navigate('/')} />
       </div>
 
-      {/* Mobile: Logo Section */}
-      <div className="px-6 pt-4 pb-8 lg:hidden">
-        <h1 className="text-4xl font-bold text-white mb-2">Welcome</h1>
-        <h1 className="text-4xl font-black text-white">back</h1>
-        <p className="text-white/70 mt-2">Sign in to your account</p>
-      </div>
-
-      {/* Form Card - Mobile: slide up, Desktop: centered card */}
-      <div className="flex-1 bg-white rounded-t-3xl px-6 pt-8 pb-6 lg:flex-none lg:w-full lg:max-w-md lg:rounded-2xl lg:shadow-xl lg:border lg:border-gray-200 lg:p-8">
-        {/* Desktop: Logo and Header */}
+      <div
+        className="flex-1 lg:flex-none lg:w-full lg:max-w-md relative"
+        style={{
+          background: 'var(--surface)',
+          borderRadius: 'var(--radius-xl) var(--radius-xl) 0 0',
+          padding: '32px 24px 24px',
+          boxShadow: 'var(--shadow-card)',
+        }}
+      >
         <div className="hidden lg:block mb-8">
-          <button
+          <IconButton
+            icon="x"
+            label="Close"
+            flat
             onClick={() => navigate('/')}
-            className="absolute top-4 right-4 w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5 text-gray-600" />
-          </button>
+            className="absolute top-4 right-4"
+          />
           <Link to="/" className="flex justify-center mb-6">
-            <img src={Logo} alt="Kasi Bites" className="h-16" />
+            <Logo size={48} />
           </Link>
-          <h1 className="text-2xl font-bold text-center text-gray-900">Welcome back</h1>
-          <p className="text-gray-500 text-center mt-1">Sign in to your account</p>
+          <h1 className="text-center" style={{ font: '600 28px/34px var(--font-display)', color: 'var(--ink)' }}>
+            Welcome back
+          </h1>
+          <p className="text-center mt-1" style={{ color: 'var(--ink-muted)' }}>
+            Sign in to your account
+          </p>
         </div>
 
-        {/* Error Message */}
+        <div className="lg:hidden mb-6">
+          <h1 style={{ font: '600 28px/34px var(--font-display)', color: 'var(--ink)' }}>Welcome back</h1>
+          <p className="mt-1" style={{ color: 'var(--ink-muted)' }}>
+            Sign in to your account
+          </p>
+        </div>
+
         {error && (
-          <div className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-            <p className="text-sm text-red-700">{error}</p>
+          <div
+            className="flex items-center gap-3 mb-6"
+            style={{
+              background: 'var(--brand-soft)',
+              border: '1px solid var(--danger)',
+              borderRadius: 'var(--radius-md)',
+              padding: 16,
+            }}
+          >
+            <AlertCircle size={20} style={{ color: 'var(--danger)', flexShrink: 0 }} />
+            <p className="text-sm" style={{ color: 'var(--danger)' }}>
+              {error}
+            </p>
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setError(null);
-              }}
-              autoComplete="email"
-              className={cn(
-                'w-full bg-gray-50 border border-gray-200 rounded-xl',
-                'px-4 py-4 text-base text-black placeholder-gray-400',
-                'outline-none transition-all duration-150',
-                'focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20'
-              )}
-            />
-          </div>
+          <TextField
+            label="Email"
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setError(null);
+            }}
+            autoComplete="email"
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setError(null);
-                }}
-                autoComplete="current-password"
-                className={cn(
-                  'w-full bg-gray-50 border border-gray-200 rounded-xl',
-                  'px-4 py-4 pr-12 text-base text-black placeholder-gray-400',
-                  'outline-none transition-all duration-150',
-                  'focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20'
-                )}
-              />
+          <TextField
+            label="Password"
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setError(null);
+            }}
+            autoComplete="current-password"
+            trailing={
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                style={{ color: 'var(--ink-subtle)', display: 'flex' }}
               >
-                {showPassword ? (
-                  <EyeOff className="w-5 h-5" />
-                ) : (
-                  <Eye className="w-5 h-5" />
-                )}
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
-            </div>
-          </div>
+            }
+          />
 
-          {/* Forgot Password */}
           <div className="text-right">
-            <button
-              type="button"
-              className="text-sm text-orange-500 font-medium hover:text-orange-600"
-            >
+            <button type="button" className="sh-link">
               Forgot password?
             </button>
           </div>
 
-          <Button
-            type="submit"
-            fullWidth
-            isLoading={isLoading}
-            className="bg-orange-500 hover:bg-orange-600 py-4 text-base mt-4"
-          >
-            Sign In
+          <Button type="submit" block disabled={isLoading}>
+            {isLoading ? 'Signing in…' : 'Sign in'}
           </Button>
         </form>
 
-        {/* Divider */}
         <div className="flex items-center my-6">
-          <div className="flex-1 h-px bg-gray-200" />
-          <span className="px-4 text-sm text-gray-400">or</span>
-          <div className="flex-1 h-px bg-gray-200" />
+          <div style={{ flex: 1, height: 1, background: 'var(--line)' }} />
+          <span className="px-4 text-sm" style={{ color: 'var(--ink-subtle)' }}>
+            or
+          </span>
+          <div style={{ flex: 1, height: 1, background: 'var(--line)' }} />
         </div>
 
-        {/* Continue as Guest */}
         <button
           onClick={() => navigate('/')}
-          className="w-full py-3 text-center text-gray-600 hover:text-gray-800 font-medium"
+          className="w-full py-3 text-center font-bold safe-bottom lg:pb-0"
+          style={{ color: 'var(--ink-muted)' }}
         >
           Continue as guest
         </button>
 
-        {/* Register Link */}
-        <p className="mt-6 text-center text-gray-600 safe-bottom lg:pb-0">
+        <p className="mt-6 text-center" style={{ color: 'var(--ink-muted)' }}>
           Don't have an account?{' '}
-          <Link to="/register" className="text-orange-500 font-semibold hover:text-orange-600">
+          <Link to="/register" className="sh-link">
             Sign up
           </Link>
         </p>
       </div>
 
-      {/* Desktop: Back to home link */}
       <div className="hidden lg:block mt-6">
-        <button
-          onClick={() => navigate('/')}
-          className="text-gray-500 hover:text-gray-700 text-sm"
-        >
+        <button onClick={() => navigate('/')} className="text-sm" style={{ color: 'var(--ink-muted)' }}>
           ← Back to home
         </button>
       </div>

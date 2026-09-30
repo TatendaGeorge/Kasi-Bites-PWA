@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLoadScript } from '@react-google-maps/api';
 import { cn } from '@/lib/utils';
-import { MapPin, Loader2, Navigation, Building2, Home, MapPinned } from 'lucide-react';
+import { Loader2, Navigation, Building2, Home, MapPinned } from 'lucide-react';
+import { Icon } from '@/components/shisa';
 
 const libraries: ('places')[] = ['places'];
 
@@ -24,7 +25,6 @@ export interface AddressAutocompleteProps {
   disabled?: boolean;
 }
 
-// Get appropriate icon based on place type
 function getPlaceIcon(types: string[]) {
   if (types.includes('street_address') || types.includes('route')) {
     return <Navigation className="w-4 h-4" />;
@@ -37,6 +37,24 @@ function getPlaceIcon(types: string[]) {
   }
   return <MapPinned className="w-4 h-4" />;
 }
+
+const fieldStyle = (padLeft: number, padRight: number, hasError?: boolean): React.CSSProperties => ({
+  width: '100%',
+  background: 'var(--surface)',
+  border: `1px solid ${hasError ? 'var(--danger)' : 'var(--line-strong)'}`,
+  borderRadius: 'var(--radius-md)',
+  padding: `14px ${padRight}px 14px ${padLeft}px`,
+  font: '400 15px/22px var(--font-body)',
+  color: 'var(--ink)',
+  outline: 'none',
+});
+
+const labelStyle: React.CSSProperties = {
+  display: 'block',
+  font: '700 13px/18px var(--font-body)',
+  color: 'var(--ink-muted)',
+  marginBottom: 8,
+};
 
 export function AddressAutocomplete({
   value,
@@ -66,23 +84,19 @@ export function AddressAutocomplete({
     libraries,
   });
 
-  // Initialize services when loaded
   useEffect(() => {
     if (isLoaded && !autocompleteServiceRef.current) {
       autocompleteServiceRef.current = new google.maps.places.AutocompleteService();
-      // Create a dummy div for PlacesService (required but not displayed)
       const dummyDiv = document.createElement('div');
       placesServiceRef.current = new google.maps.places.PlacesService(dummyDiv);
       sessionTokenRef.current = new google.maps.places.AutocompleteSessionToken();
     }
   }, [isLoaded]);
 
-  // Sync external value changes
   useEffect(() => {
     setInputValue(value);
   }, [value]);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -134,9 +148,8 @@ export function AddressAutocomplete({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setInputValue(newValue);
-    onChange(newValue); // Update parent without coordinates
+    onChange(newValue);
 
-    // Debounce API calls
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
@@ -146,42 +159,43 @@ export function AddressAutocomplete({
     }, 300);
   };
 
-  const handleSelectPrediction = useCallback((prediction: Prediction) => {
-    if (!placesServiceRef.current) return;
+  const handleSelectPrediction = useCallback(
+    (prediction: Prediction) => {
+      if (!placesServiceRef.current) return;
 
-    setIsSearching(true);
-    setIsOpen(false);
+      setIsSearching(true);
+      setIsOpen(false);
 
-    placesServiceRef.current.getDetails(
-      {
-        placeId: prediction.place_id,
-        fields: ['formatted_address', 'geometry'],
-        sessionToken: sessionTokenRef.current!,
-      },
-      (place, status) => {
-        setIsSearching(false);
+      placesServiceRef.current.getDetails(
+        {
+          placeId: prediction.place_id,
+          fields: ['formatted_address', 'geometry'],
+          sessionToken: sessionTokenRef.current!,
+        },
+        (place, status) => {
+          setIsSearching(false);
 
-        if (status === google.maps.places.PlacesServiceStatus.OK && place) {
-          const address = place.formatted_address || prediction.description;
-          const lat = place.geometry?.location?.lat();
-          const lng = place.geometry?.location?.lng();
+          if (status === google.maps.places.PlacesServiceStatus.OK && place) {
+            const address = place.formatted_address || prediction.description;
+            const lat = place.geometry?.location?.lat();
+            const lng = place.geometry?.location?.lng();
 
-          setInputValue(address);
-          onChange(address, lat, lng);
+            setInputValue(address);
+            onChange(address, lat, lng);
 
-          // Create new session token for next search
-          sessionTokenRef.current = new google.maps.places.AutocompleteSessionToken();
-        } else {
-          // Fallback to prediction description
-          setInputValue(prediction.description);
-          onChange(prediction.description);
+            sessionTokenRef.current = new google.maps.places.AutocompleteSessionToken();
+          } else {
+            setInputValue(prediction.description);
+            onChange(prediction.description);
+          }
+
+          setPredictions([]);
+          setActiveIndex(-1);
         }
-
-        setPredictions([]);
-        setActiveIndex(-1);
-      }
-    );
-  }, [onChange]);
+      );
+    },
+    [onChange]
+  );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isOpen || predictions.length === 0) return;
@@ -189,11 +203,11 @@ export function AddressAutocomplete({
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
-        setActiveIndex(prev => (prev < predictions.length - 1 ? prev + 1 : 0));
+        setActiveIndex((prev) => (prev < predictions.length - 1 ? prev + 1 : 0));
         break;
       case 'ArrowUp':
         e.preventDefault();
-        setActiveIndex(prev => (prev > 0 ? prev - 1 : predictions.length - 1));
+        setActiveIndex((prev) => (prev > 0 ? prev - 1 : predictions.length - 1));
         break;
       case 'Enter':
         e.preventDefault();
@@ -214,14 +228,9 @@ export function AddressAutocomplete({
     }
   };
 
-  // Fallback input for errors or loading
   const renderFallbackInput = (showWarning = false) => (
     <div className="w-full">
-      {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">
-          {label}
-        </label>
-      )}
+      {label && <label style={labelStyle}>{label}</label>}
       <div className="relative">
         <input
           type="text"
@@ -232,23 +241,25 @@ export function AddressAutocomplete({
           }}
           placeholder={placeholder}
           disabled={disabled}
-          className={cn(
-            'w-full bg-gray-100 border border-gray-200 rounded-xl',
-            'pl-11 pr-4 py-3.5 text-base text-black placeholder-gray-400',
-            'outline-none transition-all duration-150',
-            'focus:border-black focus:ring-2 focus:ring-black/10',
-            error && 'border-red-500 focus:border-red-500 focus:ring-red-500/20',
-            disabled && 'opacity-50 cursor-not-allowed'
-          )}
+          style={{ ...fieldStyle(44, 16, !!error), opacity: disabled ? 0.5 : 1, cursor: disabled ? 'not-allowed' : undefined }}
         />
-        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+        <Icon
+          name="map-pin"
+          size={20}
+          className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
+          style={{ color: 'var(--ink-subtle)' }}
+        />
       </div>
       {showWarning && (
-        <p className="mt-1.5 text-sm text-amber-600">
+        <p className="mt-1.5 text-sm" style={{ color: 'var(--mielie)' }}>
           Address suggestions unavailable. Please type your full address.
         </p>
       )}
-      {error && <p className="mt-1.5 text-sm text-red-600">{error}</p>}
+      {error && (
+        <p className="mt-1.5 text-sm" style={{ color: 'var(--danger)' }}>
+          {error}
+        </p>
+      )}
     </div>
   );
 
@@ -259,23 +270,18 @@ export function AddressAutocomplete({
   if (!isLoaded) {
     return (
       <div className="w-full">
-        {label && (
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            {label}
-          </label>
-        )}
+        {label && <label style={labelStyle}>{label}</label>}
         <div className="relative">
-          <div
-            className={cn(
-              'w-full bg-gray-100 border border-gray-200 rounded-xl',
-              'pl-11 pr-4 py-3.5 text-base text-gray-400',
-              'flex items-center gap-2'
-            )}
-          >
+          <div style={{ ...fieldStyle(44, 16), display: 'flex', alignItems: 'center', gap: 8, color: 'var(--ink-subtle)' }}>
             <Loader2 className="w-4 h-4 animate-spin" />
-            Loading...
+            Loading…
           </div>
-          <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Icon
+            name="map-pin"
+            size={20}
+            className="absolute left-4 top-1/2 -translate-y-1/2"
+            style={{ color: 'var(--ink-subtle)' }}
+          />
         </div>
       </div>
     );
@@ -283,11 +289,7 @@ export function AddressAutocomplete({
 
   return (
     <div className="w-full relative">
-      {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">
-          {label}
-        </label>
-      )}
+      {label && <label style={labelStyle}>{label}</label>}
 
       <div className="relative">
         <input
@@ -304,35 +306,29 @@ export function AddressAutocomplete({
           aria-expanded={isOpen}
           aria-haspopup="listbox"
           aria-autocomplete="list"
-          className={cn(
-            'w-full bg-gray-100 border border-gray-200 rounded-xl',
-            'pl-11 pr-10 py-3.5 text-base text-black placeholder-gray-400',
-            'outline-none transition-all duration-150',
-            'focus:border-black focus:ring-2 focus:ring-black/10',
-            error && 'border-red-500 focus:border-red-500 focus:ring-red-500/20',
-            disabled && 'opacity-50 cursor-not-allowed'
-          )}
+          style={{ ...fieldStyle(44, 40, !!error), opacity: disabled ? 0.5 : 1, cursor: disabled ? 'not-allowed' : undefined }}
         />
-        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+        <Icon
+          name="map-pin"
+          size={20}
+          className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
+          style={{ color: 'var(--ink-subtle)' }}
+        />
 
-        {/* Loading indicator */}
         {isSearching && (
-          <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 animate-spin" />
+          <Loader2
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 animate-spin"
+            style={{ color: 'var(--ink-subtle)' }}
+          />
         )}
       </div>
 
-      {/* Custom Dropdown */}
       {isOpen && predictions.length > 0 && (
         <div
           ref={dropdownRef}
           role="listbox"
-          className={cn(
-            'absolute z-50 w-full mt-2',
-            'bg-white rounded-xl border border-gray-200',
-            'shadow-lg shadow-black/10',
-            'overflow-hidden',
-            'dropdown-appear'
-          )}
+          className="absolute z-50 w-full mt-2 overflow-hidden dropdown-appear"
+          style={{ background: 'var(--surface)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-float)' }}
         >
           <ul className="py-1 max-h-64 overflow-y-auto">
             {predictions.map((prediction, index) => (
@@ -342,29 +338,23 @@ export function AddressAutocomplete({
                 aria-selected={index === activeIndex}
                 onClick={() => handleSelectPrediction(prediction)}
                 onMouseEnter={() => setActiveIndex(index)}
-                className={cn(
-                  'flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors',
-                  index === activeIndex
-                    ? 'bg-gray-100'
-                    : 'hover:bg-gray-50'
-                )}
+                className="flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors"
+                style={{ background: index === activeIndex ? 'var(--surface-sunken)' : 'transparent' }}
               >
-                <div className={cn(
-                  'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-0.5',
-                  index === activeIndex
-                    ? 'bg-black text-white'
-                    : 'bg-gray-100 text-gray-500'
-                )}>
+                <div
+                  className={cn('flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center mt-0.5')}
+                  style={{
+                    background: index === activeIndex ? 'var(--ink)' : 'var(--surface-sunken)',
+                    color: index === activeIndex ? 'var(--surface)' : 'var(--ink-muted)',
+                  }}
+                >
                   {getPlaceIcon(prediction.types)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={cn(
-                    'font-medium truncate',
-                    index === activeIndex ? 'text-black' : 'text-gray-900'
-                  )}>
+                  <p className="font-medium truncate" style={{ color: 'var(--ink)' }}>
                     {prediction.structured_formatting.main_text}
                   </p>
-                  <p className="text-sm text-gray-500 truncate">
+                  <p className="text-sm truncate" style={{ color: 'var(--ink-muted)' }}>
                     {prediction.structured_formatting.secondary_text}
                   </p>
                 </div>
@@ -372,32 +362,31 @@ export function AddressAutocomplete({
             ))}
           </ul>
 
-          {/* Subtle footer - optional, can be removed entirely */}
-          <div className="px-4 py-2 bg-gray-50 border-t border-gray-100">
-            <p className="text-xs text-gray-400 text-center">
+          <div className="px-4 py-2" style={{ background: 'var(--surface-sunken)', borderTop: '1px solid var(--line)' }}>
+            <p className="text-xs text-center" style={{ color: 'var(--ink-subtle)' }}>
               Select an address from the list
             </p>
           </div>
         </div>
       )}
 
-      {/* No results message */}
       {isOpen && predictions.length === 0 && inputValue.length >= 3 && !isSearching && (
         <div
-          className={cn(
-            'absolute z-50 w-full mt-2',
-            'bg-white rounded-xl border border-gray-200',
-            'shadow-lg shadow-black/10 p-4'
-          )}
+          className="absolute z-50 w-full mt-2 p-4"
+          style={{ background: 'var(--surface)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-float)' }}
         >
-          <div className="flex items-center gap-3 text-gray-500">
-            <MapPin className="w-5 h-5" />
+          <div className="flex items-center gap-3" style={{ color: 'var(--ink-muted)' }}>
+            <Icon name="map-pin" size={20} />
             <p className="text-sm">No addresses found. Try a different search.</p>
           </div>
         </div>
       )}
 
-      {error && <p className="mt-1.5 text-sm text-red-600">{error}</p>}
+      {error && (
+        <p className="mt-1.5 text-sm" style={{ color: 'var(--danger)' }}>
+          {error}
+        </p>
+      )}
     </div>
   );
 }

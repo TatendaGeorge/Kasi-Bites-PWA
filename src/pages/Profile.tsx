@@ -1,10 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, Phone, MapPin, LogOut, ChevronRight, Edit2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { Button, TextField, Icon, SettingsGroup, SettingsRow } from '@/components/shisa';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -34,30 +31,28 @@ export default function Profile() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-white pb-nav lg:pb-0">
-        <header className="sticky top-0 z-40 bg-white border-b border-gray-100 safe-top lg:hidden">
-          <div className="px-4 py-4">
-            <h1 className="text-2xl font-bold">Account</h1>
-          </div>
-        </header>
-
-        {/* Desktop Header */}
-        <div className="hidden lg:block px-8 py-6 border-b border-gray-100">
-          <h1 className="text-2xl font-bold">Account</h1>
+      <div className="pb-nav lg:pb-0" style={{ minHeight: '100dvh', background: 'var(--bg)' }}>
+        <div className="safe-top sh-pad lg:px-8 lg:py-6" style={{ borderBottom: '1px solid var(--line)' }}>
+          <h1 style={{ font: '600 28px/34px var(--font-display)', color: 'var(--ink)' }}>Account</h1>
         </div>
 
         <div className="flex flex-col items-center justify-center px-4 py-16">
-          <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-            <User className="w-12 h-12 text-gray-400" />
+          <div
+            className="flex items-center justify-center mb-6"
+            style={{ width: 96, height: 96, borderRadius: '50%', background: 'var(--surface-sunken)' }}
+          >
+            <Icon name="circle-user" size={48} style={{ color: 'var(--ink-subtle)' }} />
           </div>
-          <h2 className="text-xl font-bold mb-2">Sign in to your account</h2>
-          <p className="text-gray-500 text-center mb-6">
+          <h2 className="mb-2" style={{ font: '600 22px/28px var(--font-display)', color: 'var(--ink)' }}>
+            Sign in to your account
+          </h2>
+          <p className="text-center mb-6" style={{ color: 'var(--ink-muted)' }}>
             Track orders, save addresses, and more
           </p>
           <div className="flex gap-3">
-            <Button onClick={() => navigate('/login')}>Sign In</Button>
-            <Button onClick={() => navigate('/register')} variant="outline">
-              Create Account
+            <Button onClick={() => navigate('/login')}>Sign in</Button>
+            <Button onClick={() => navigate('/register')} variant="secondary">
+              Create account
             </Button>
           </div>
         </div>
@@ -66,47 +61,34 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 lg:bg-white pb-nav lg:pb-0">
-      <header className="sticky top-0 z-40 bg-white border-b border-gray-100 safe-top lg:hidden">
-        <div className="flex items-center justify-between px-4 py-4">
-          <h1 className="text-2xl font-bold">Account</h1>
-          {!isEditing && (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="p-2 text-gray-600 hover:bg-gray-100 rounded-full"
-            >
-              <Edit2 className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-      </header>
-
-      {/* Desktop Header */}
-      <div className="hidden lg:flex items-center justify-between px-8 py-6 border-b border-gray-100">
-        <h1 className="text-2xl font-bold">Account</h1>
+    <div className="pb-nav lg:pb-0" style={{ minHeight: '100dvh', background: 'var(--bg)' }}>
+      <div
+        className="safe-top sh-pad lg:px-8 lg:py-6 flex items-center justify-between"
+        style={{ borderBottom: '1px solid var(--line)' }}
+      >
+        <h1 style={{ font: '600 28px/34px var(--font-display)', color: 'var(--ink)' }}>Account</h1>
         {!isEditing && (
           <button
             onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-full"
+            className="px-3 py-2"
+            style={{ color: 'var(--ink-muted)', borderRadius: 'var(--radius-pill)' }}
           >
-            <Edit2 className="w-4 h-4" />
-            <span className="text-sm font-medium">Edit Profile</span>
+            <span className="text-sm font-bold">Edit</span>
           </button>
         )}
       </div>
 
-      <div className="px-4 lg:px-8 py-6 lg:max-w-2xl">
-        {/* Profile Card */}
-        <div className="bg-white rounded-xl p-4 mb-6">
+      <div className="sh-pad lg:px-8 lg:py-6 lg:max-w-2xl sh-stack">
+        <SettingsGroup>
           {isEditing ? (
             <div className="space-y-4">
-              <Input
+              <TextField
                 label="Name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Your name"
               />
-              <Input
+              <TextField
                 label="Phone"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -114,21 +96,25 @@ export default function Profile() {
                 type="tel"
               />
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Default Address
+                <label style={{ display: 'block', font: '700 13px/18px var(--font-body)', color: 'var(--ink-muted)', marginBottom: 8 }}>
+                  Default address
                 </label>
                 <textarea
                   value={formData.default_address}
                   onChange={(e) => setFormData({ ...formData, default_address: e.target.value })}
                   placeholder="Your default delivery address"
                   rows={3}
-                  className={cn(
-                    'w-full bg-gray-100 border border-gray-200 rounded-xl',
-                    'px-4 py-3.5 text-base text-black placeholder-gray-400',
-                    'outline-none transition-all duration-150',
-                    'focus:border-black focus:ring-2 focus:ring-black/10',
-                    'resize-none'
-                  )}
+                  style={{
+                    width: '100%',
+                    background: 'var(--surface)',
+                    border: '1px solid var(--line-strong)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '14px 16px',
+                    font: '400 15px/22px var(--font-body)',
+                    color: 'var(--ink)',
+                    outline: 'none',
+                    resize: 'none',
+                  }}
                 />
               </div>
               <div className="flex gap-3 pt-2">
@@ -142,82 +128,78 @@ export default function Profile() {
                     });
                   }}
                   variant="secondary"
-                  className="flex-1"
+                  block
                 >
                   Cancel
                 </Button>
-                <Button
-                  onClick={handleSave}
-                  isLoading={isSaving}
-                  className="flex-1"
-                >
-                  Save
+                <Button onClick={handleSave} disabled={isSaving} block>
+                  {isSaving ? 'Saving…' : 'Save'}
                 </Button>
               </div>
             </div>
           ) : (
             <div className="space-y-4">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
-                  <User className="w-8 h-8 text-orange-500" />
+                <div
+                  className="flex items-center justify-center"
+                  style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--brand-soft)' }}
+                >
+                  <Icon name="circle-user" size={32} style={{ color: 'var(--brand-text)' }} />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold">{user?.name}</h2>
-                  <p className="text-sm text-gray-500">{user?.email}</p>
+                  <h2 style={{ font: '600 18px/24px var(--font-display)', color: 'var(--ink)' }}>{user?.name}</h2>
+                  <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+                    {user?.email}
+                  </p>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-gray-100 space-y-3">
-                <div className="flex items-center gap-3">
-                  <Mail className="w-5 h-5 text-gray-400" />
-                  <div>
-                    <p className="text-sm text-gray-500">Email</p>
-                    <p className="font-medium">{user?.email}</p>
-                  </div>
-                </div>
-
+              <div className="pt-4 space-y-3" style={{ borderTop: '1px solid var(--line)' }}>
                 {user?.phone && (
                   <div className="flex items-center gap-3">
-                    <Phone className="w-5 h-5 text-gray-400" />
+                    <Icon name="phone" size={20} style={{ color: 'var(--ink-subtle)' }} />
                     <div>
-                      <p className="text-sm text-gray-500">Phone</p>
-                      <p className="font-medium">{user.phone}</p>
+                      <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+                        Phone
+                      </p>
+                      <p style={{ font: '500 15px/22px var(--font-body)', color: 'var(--ink)' }}>{user.phone}</p>
                     </div>
                   </div>
                 )}
 
                 {user?.default_address && (
                   <div className="flex items-start gap-3">
-                    <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
+                    <Icon name="map-pin" size={20} style={{ color: 'var(--ink-subtle)', marginTop: 2 }} />
                     <div>
-                      <p className="text-sm text-gray-500">Default Address</p>
-                      <p className="font-medium">{user.default_address}</p>
+                      <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+                        Default address
+                      </p>
+                      <p style={{ font: '500 15px/22px var(--font-body)', color: 'var(--ink)' }}>{user.default_address}</p>
                     </div>
                   </div>
                 )}
               </div>
             </div>
           )}
-        </div>
+        </SettingsGroup>
 
-        {/* Menu Items */}
-        <div className="bg-white rounded-xl overflow-hidden mb-6">
-          <button
-            onClick={() => navigate('/orders')}
-            className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50"
-          >
-            <span className="font-medium">Order History</span>
-            <ChevronRight className="w-5 h-5 text-gray-400" />
-          </button>
-        </div>
+        <SettingsGroup>
+          <SettingsRow icon="receipt-text" title="Order history" onClick={() => navigate('/orders')} />
+        </SettingsGroup>
 
-        {/* Logout Button */}
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2 px-4 py-4 bg-white rounded-xl text-red-600 hover:bg-red-50"
+          className="w-full flex items-center justify-center gap-2"
+          style={{
+            padding: 16,
+            background: 'var(--surface)',
+            borderRadius: 'var(--radius-lg)',
+            boxShadow: 'var(--shadow-card)',
+            color: 'var(--danger)',
+          }}
         >
-          <LogOut className="w-5 h-5" />
-          <span className="font-medium">Sign Out</span>
+          <Icon name="arrow-right" size={20} />
+          <span style={{ font: '700 15px/20px var(--font-body)' }}>Sign out</span>
         </button>
       </div>
     </div>

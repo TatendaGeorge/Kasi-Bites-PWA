@@ -17,10 +17,10 @@ export default defineConfig({
       injectRegister: 'auto',
       includeAssets: ['icons/*.svg'],
       manifest: {
-        name: 'Kasi Bites',
-        short_name: 'Kasi Bites',
+        name: 'Shisa',
+        short_name: 'Shisa',
         description: 'Order delicious food for delivery',
-        theme_color: '#FF6B35',
+        theme_color: '#FF5A1F',
         background_color: '#FFFFFF',
         display: 'standalone',
         orientation: 'portrait',

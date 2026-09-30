@@ -63,7 +63,7 @@ self.addEventListener('push', (event) => {
       data: payload.data,
       vibrate: [100, 50, 100],
       requireInteraction: true,
-      tag: payload.data?.order_number ? `order-${payload.data.order_number}` : 'kasi-bites',
+      tag: payload.data?.order_number ? `order-${payload.data.order_number}` : 'shisa',
     } as NotificationOptions & { vibrate?: number[] }
 
     event.waitUntil(

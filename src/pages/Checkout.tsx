@@ -1,28 +1,128 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CreditCard, Banknote, Truck, Store, AlertTriangle, Loader2, ArrowLeft } from 'lucide-react';
-import { cn, validateSAPhoneNumber } from '@/lib/utils';
+import { Loader2 } from 'lucide-react';
+import { validateSAPhoneNumber } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useStore, useDeliverySettings } from '@/context/StoreContext';
 import { Header } from '@/components/layout/Header';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import { AddressAutocomplete } from '@/components/maps/AddressAutocomplete';
 import api from '@/services/api';
 import type { FormErrors } from '@/types';
+import { Button, TextField, Icon, SectionHeader } from '@/components/shisa';
 
-// Calculate distance using Haversine formula
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // Earth's radius in km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
+}
+
+function OptionCard({
+  active,
+  disabled,
+  icon,
+  title,
+  subtitle,
+  onClick,
+}: {
+  active: boolean;
+  disabled?: boolean;
+  icon: string;
+  title: string;
+  subtitle: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="flex flex-col items-center gap-2 transition-all"
+      style={{
+        padding: 16,
+        borderRadius: 'var(--radius-md)',
+        border: `2px solid ${active ? 'var(--ink)' : 'var(--line)'}`,
+        background: active ? 'var(--surface-sunken)' : 'transparent',
+        opacity: disabled ? 0.5 : 1,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+      }}
+    >
+      <div
+        className="flex items-center justify-center"
+        style={{
+          width: 48,
+          height: 48,
+          borderRadius: '50%',
+          background: active ? 'var(--ink)' : 'var(--surface-sunken)',
+          color: active ? 'var(--surface)' : 'var(--ink)',
+        }}
+      >
+        <Icon name={icon} size={22} />
+      </div>
+      <div className="text-center">
+        <p style={{ font: '500 15px/22px var(--font-body)', color: 'var(--ink)' }}>{title}</p>
+        <p className="text-xs" style={{ color: 'var(--ink-muted)' }}>
+          {subtitle}
+        </p>
+      </div>
+    </button>
+  );
+}
+
+function PaymentRow({
+  active,
+  disabled,
+  icon,
+  title,
+  subtitle,
+  onClick,
+}: {
+  active: boolean;
+  disabled?: boolean;
+  icon: string;
+  title: string;
+  subtitle: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="w-full flex items-center gap-4 transition-colors"
+      style={{
+        padding: 16,
+        borderRadius: 'var(--radius-md)',
+        border: `2px solid ${active ? 'var(--ink)' : 'var(--line)'}`,
+        background: active ? 'var(--surface-sunken)' : 'transparent',
+        opacity: disabled ? 0.5 : 1,
+      }}
+    >
+      <div
+        className="flex items-center justify-center flex-shrink-0"
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: '50%',
+          background: active ? 'var(--ink)' : 'var(--surface-sunken)',
+          color: active ? 'var(--surface)' : 'var(--ink)',
+        }}
+      >
+        <Icon name={icon} size={20} />
+      </div>
+      <div className="text-left">
+        <p style={{ font: '500 15px/22px var(--font-body)', color: 'var(--ink)' }}>{title}</p>
+        <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+          {subtitle}
+        </p>
+      </div>
+    </button>
+  );
 }
 
 export default function Checkout() {
@@ -58,50 +158,41 @@ export default function Checkout() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
-  // Calculate distance from store
   const distanceFromStore = useMemo(() => {
     if (formData.deliveryLatitude && formData.deliveryLongitude && storeLat && storeLng) {
-      return calculateDistance(
-        storeLat,
-        storeLng,
-        formData.deliveryLatitude,
-        formData.deliveryLongitude
-      );
+      return calculateDistance(storeLat, storeLng, formData.deliveryLatitude, formData.deliveryLongitude);
     }
     return null;
   }, [formData.deliveryLatitude, formData.deliveryLongitude, storeLat, storeLng]);
 
-  // Check if delivery is available
   const isDeliveryAvailable = distanceFromStore === null || distanceFromStore <= maxDeliveryRadius;
 
-  // Auto-switch to collection if too far
   useEffect(() => {
     if (!isDeliveryAvailable && orderType === 'delivery') {
       setOrderType('collection');
     }
   }, [isDeliveryAvailable, orderType]);
 
-  // Calculate fees based on order type
   const deliveryFee = orderType === 'collection' ? 0 : configuredDeliveryFee;
   const total = subtotal + deliveryFee;
 
   const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field as keyof FormErrors]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
     setApiError(null);
   };
 
   const handleAddressChange = (address: string, lat?: number, lng?: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       deliveryAddress: address,
       deliveryLatitude: lat,
       deliveryLongitude: lng,
     }));
     if (errors.deliveryAddress) {
-      setErrors(prev => ({ ...prev, deliveryAddress: undefined }));
+      setErrors((prev) => ({ ...prev, deliveryAddress: undefined }));
     }
     setApiError(null);
   };
@@ -120,9 +211,8 @@ export default function Checkout() {
     }
 
     if (!formData.deliveryAddress.trim() || formData.deliveryAddress.trim().length < 10) {
-      newErrors.deliveryAddress = orderType === 'delivery'
-        ? 'Please enter a valid delivery address'
-        : 'Please enter your address for contact purposes';
+      newErrors.deliveryAddress =
+        orderType === 'delivery' ? 'Please enter a valid delivery address' : 'Please enter your address for contact purposes';
     }
 
     setErrors(newErrors);
@@ -153,10 +243,10 @@ export default function Checkout() {
         delivery_longitude: formData.deliveryLongitude,
         payment_method: paymentMethod,
         notes: formData.specialInstructions || undefined,
-        items: items.map(item => ({
+        items: items.map((item) => ({
           product_size_id: item.productSizeId!,
           quantity: item.quantity,
-          addon_ids: item.addons?.map(a => a.id),
+          addon_ids: item.addons?.map((a) => a.id),
         })),
       };
 
@@ -180,7 +270,7 @@ export default function Checkout() {
       } else {
         setApiError(response.error || 'Failed to place order');
       }
-    } catch (err) {
+    } catch {
       setApiError('Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -189,12 +279,12 @@ export default function Checkout() {
 
   if (isLoadingSettings) {
     return (
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="flex flex-col" style={{ minHeight: '100dvh', background: 'var(--bg)' }}>
         <Header title="Checkout" showBack />
-        <div className="flex-1 flex items-center justify-center lg:pt-8">
+        <div className="flex-1 flex items-center justify-center">
           <div className="flex flex-col items-center gap-3">
-            <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-            <p className="text-gray-500">Loading checkout...</p>
+            <Loader2 className="w-8 h-8 animate-spin" style={{ color: 'var(--ink-subtle)' }} />
+            <p style={{ color: 'var(--ink-muted)' }}>Loading checkout…</p>
           </div>
         </div>
       </div>
@@ -202,291 +292,214 @@ export default function Checkout() {
   }
 
   return (
-    <div className="min-h-screen bg-white lg:bg-gray-50 flex flex-col">
+    <div className="flex flex-col" style={{ minHeight: '100dvh', background: 'var(--bg)' }}>
       <Header title="Checkout" showBack />
 
       <form onSubmit={handleSubmit} className="flex-1 flex flex-col">
-        {/* Desktop: Page Header */}
-        <div className="hidden lg:block bg-white border-b border-gray-200">
-          <div className="max-w-6xl mx-auto px-8 py-6">
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-              >
-                <ArrowLeft className="w-6 h-6" />
-              </button>
-              <h1 className="text-2xl font-bold">Checkout</h1>
-            </div>
-          </div>
-        </div>
+        <div className="flex-1 lg:flex lg:gap-8 px-4 lg:px-8 py-6 overflow-y-auto lg:max-w-6xl lg:mx-auto lg:w-full">
+          <div className="flex-1 sh-stack">
+            <section className="lg:sh-card" style={{ padding: 0 }}>
+              <div className="lg:p-6">
+                <h3 className="mb-4" style={{ font: '600 18px/24px var(--font-display)', color: 'var(--ink)' }}>
+                  Order type
+                </h3>
 
-        <div className="flex-1 lg:flex lg:gap-8 px-4 lg:px-8 py-6 overflow-y-auto lg:max-w-6xl lg:mx-auto lg:w-full lg:bg-gray-50">
-          {/* Form Section */}
-          <div className="flex-1 space-y-6">
-          {/* Order Type Selection */}
-          <section className="lg:bg-white lg:rounded-xl lg:p-6 lg:border lg:border-gray-200">
-            <h3 className="text-lg font-semibold mb-4">Order Type</h3>
-
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => isDeliveryAvailable && setOrderType('delivery')}
-                disabled={!isDeliveryAvailable}
-                className={cn(
-                  'flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all',
-                  orderType === 'delivery'
-                    ? 'border-black bg-gray-50'
-                    : 'border-gray-200',
-                  !isDeliveryAvailable && 'opacity-50 cursor-not-allowed'
-                )}
-              >
-                <div className={cn(
-                  'w-12 h-12 rounded-full flex items-center justify-center',
-                  orderType === 'delivery' ? 'bg-black text-white' : 'bg-gray-100'
-                )}>
-                  <Truck className="w-6 h-6" />
-                </div>
-                <div className="text-center">
-                  <p className="font-medium">Delivery</p>
-                  <p className="text-xs text-gray-500">R{configuredDeliveryFee.toFixed(2)} fee</p>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setOrderType('collection')}
-                className={cn(
-                  'flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all',
-                  orderType === 'collection'
-                    ? 'border-black bg-gray-50'
-                    : 'border-gray-200'
-                )}
-              >
-                <div className={cn(
-                  'w-12 h-12 rounded-full flex items-center justify-center',
-                  orderType === 'collection' ? 'bg-black text-white' : 'bg-gray-100'
-                )}>
-                  <Store className="w-6 h-6" />
-                </div>
-                <div className="text-center">
-                  <p className="font-medium">Collection</p>
-                  <p className="text-xs text-gray-500">No fee</p>
-                </div>
-              </button>
-            </div>
-
-            {/* Distance Warning */}
-            {!isDeliveryAvailable && distanceFromStore !== null && (
-              <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm">
-                  <p className="font-medium text-yellow-800">Outside delivery area</p>
-                  <p className="text-yellow-700">
-                    Your location is {distanceFromStore.toFixed(1)}km away. We only deliver within {maxDeliveryRadius}km.
-                    Please choose collection instead.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {orderType === 'collection' && (
-              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <strong>Collection Point:</strong> You'll receive a notification when your order is ready for pickup.
-                </p>
-              </div>
-            )}
-          </section>
-
-          {/* Contact Details */}
-          <section className="lg:bg-white lg:rounded-xl lg:p-6 lg:border lg:border-gray-200">
-            <h3 className="text-lg font-semibold mb-4">
-              {orderType === 'delivery' ? 'Delivery Details' : 'Contact Details'}
-            </h3>
-
-            <div className="space-y-4">
-              <Input
-                label="Full Name"
-                placeholder="Enter your full name"
-                value={formData.fullName}
-                onChange={(e) => handleChange('fullName', e.target.value)}
-                error={errors.fullName}
-              />
-
-              <Input
-                label="Phone Number"
-                placeholder="0821234567"
-                type="tel"
-                value={formData.phoneNumber}
-                onChange={(e) => handleChange('phoneNumber', e.target.value)}
-                error={errors.phoneNumber}
-              />
-
-              <AddressAutocomplete
-                label={orderType === 'delivery' ? 'Delivery Address' : 'Your Address'}
-                placeholder="Start typing your address..."
-                value={formData.deliveryAddress}
-                onChange={handleAddressChange}
-                error={errors.deliveryAddress}
-              />
-
-              {distanceFromStore !== null && isDeliveryAvailable && orderType === 'delivery' && (
-                <p className="text-sm text-green-600">
-                  {distanceFromStore < 0.1 ? 'Very close to store' : `${distanceFromStore.toFixed(1)}km from store`} - Delivery available
-                </p>
-              )}
-
-              {isAuthenticated && (
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={saveAddress}
-                    onChange={(e) => setSaveAddress(e.target.checked)}
-                    className="w-5 h-5 rounded border-gray-300 text-black focus:ring-black"
+                <div className="grid grid-cols-2 gap-3">
+                  <OptionCard
+                    active={orderType === 'delivery'}
+                    disabled={!isDeliveryAvailable}
+                    icon="bike"
+                    title="Delivery"
+                    subtitle={`R${configuredDeliveryFee.toFixed(2)} fee`}
+                    onClick={() => isDeliveryAvailable && setOrderType('delivery')}
                   />
-                  <span className="text-sm text-gray-600">Save as default address</span>
-                </label>
-              )}
+                  <OptionCard
+                    active={orderType === 'collection'}
+                    icon="store"
+                    title="Collection"
+                    subtitle="No fee"
+                    onClick={() => setOrderType('collection')}
+                  />
+                </div>
 
-              <Input
-                label="Special Instructions (optional)"
-                placeholder={orderType === 'delivery'
-                  ? 'Any special delivery instructions...'
-                  : 'Any special requests...'}
-                value={formData.specialInstructions}
-                onChange={(e) => handleChange('specialInstructions', e.target.value)}
-              />
-            </div>
-          </section>
-
-          {/* Payment Method */}
-          <section className="lg:bg-white lg:rounded-xl lg:p-6 lg:border lg:border-gray-200">
-            <h3 className="text-lg font-semibold mb-4">Payment Method</h3>
-
-            <div className="space-y-3">
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('cash')}
-                className={cn(
-                  'w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-colors',
-                  paymentMethod === 'cash'
-                    ? 'border-black bg-gray-50'
-                    : 'border-gray-200'
+                {!isDeliveryAvailable && distanceFromStore !== null && (
+                  <div
+                    className="mt-3 flex items-start gap-3"
+                    style={{ padding: 12, borderRadius: 'var(--radius-md)', background: 'var(--mielie)' }}
+                  >
+                    <p className="text-sm" style={{ color: 'var(--ink)' }}>
+                      <strong>Outside delivery area.</strong> Your location is {distanceFromStore.toFixed(1)}km away. We only
+                      deliver within {maxDeliveryRadius}km. Please choose collection instead.
+                    </p>
+                  </div>
                 )}
-              >
-                <div className={cn(
-                  'w-10 h-10 rounded-full flex items-center justify-center',
-                  paymentMethod === 'cash' ? 'bg-black text-white' : 'bg-gray-100'
-                )}>
-                  <Banknote className="w-5 h-5" />
-                </div>
-                <div className="text-left">
-                  <p className="font-medium">
-                    {orderType === 'delivery' ? 'Cash on Delivery' : 'Cash on Collection'}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {orderType === 'delivery' ? 'Pay when your order arrives' : 'Pay when you collect'}
-                  </p>
-                </div>
-              </button>
 
-              <button
-                type="button"
-                onClick={() => setPaymentMethod('card')}
-                disabled
-                className={cn(
-                  'w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-colors opacity-50',
-                  paymentMethod === 'card'
-                    ? 'border-black bg-gray-50'
-                    : 'border-gray-200'
+                {orderType === 'collection' && (
+                  <div className="mt-3" style={{ padding: 12, borderRadius: 'var(--radius-md)', background: 'var(--brand-soft)' }}>
+                    <p className="text-sm" style={{ color: 'var(--brand-text)' }}>
+                      <strong>Collection point:</strong> You'll receive a notification when your order is ready for pickup.
+                    </p>
+                  </div>
                 )}
-              >
-                <div className={cn(
-                  'w-10 h-10 rounded-full flex items-center justify-center',
-                  paymentMethod === 'card' ? 'bg-black text-white' : 'bg-gray-100'
-                )}>
-                  <CreditCard className="w-5 h-5" />
-                </div>
-                <div className="text-left">
-                  <p className="font-medium">Card Payment</p>
-                  <p className="text-sm text-gray-500">Coming soon</p>
-                </div>
-              </button>
-            </div>
-          </section>
+              </div>
+            </section>
 
-          {/* API Error - Mobile */}
-          {apiError && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg lg:hidden">
-              <p className="text-red-700">{apiError}</p>
-            </div>
-          )}
+            <section className="lg:sh-card" style={{ padding: 0 }}>
+              <div className="lg:p-6 sh-stack">
+                <h3 style={{ font: '600 18px/24px var(--font-display)', color: 'var(--ink)' }}>
+                  {orderType === 'delivery' ? 'Delivery details' : 'Contact details'}
+                </h3>
+
+                <TextField
+                  label="Full name"
+                  placeholder="Enter your full name"
+                  value={formData.fullName}
+                  onChange={(e) => handleChange('fullName', e.target.value)}
+                  error={errors.fullName}
+                />
+
+                <TextField
+                  label="Phone number"
+                  placeholder="0821234567"
+                  type="tel"
+                  value={formData.phoneNumber}
+                  onChange={(e) => handleChange('phoneNumber', e.target.value)}
+                  error={errors.phoneNumber}
+                />
+
+                <AddressAutocomplete
+                  label={orderType === 'delivery' ? 'Delivery address' : 'Your address'}
+                  placeholder="Start typing your address…"
+                  value={formData.deliveryAddress}
+                  onChange={handleAddressChange}
+                  error={errors.deliveryAddress}
+                />
+
+                {distanceFromStore !== null && isDeliveryAvailable && orderType === 'delivery' && (
+                  <p className="text-sm" style={{ color: 'var(--success)' }}>
+                    {distanceFromStore < 0.1 ? 'Very close to store' : `${distanceFromStore.toFixed(1)}km from store`} —
+                    delivery available
+                  </p>
+                )}
+
+                {isAuthenticated && (
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={saveAddress}
+                      onChange={(e) => setSaveAddress(e.target.checked)}
+                      className="w-5 h-5"
+                      style={{ accentColor: 'var(--ink)' }}
+                    />
+                    <span className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+                      Save as default address
+                    </span>
+                  </label>
+                )}
+
+                <TextField
+                  label="Special instructions (optional)"
+                  placeholder={orderType === 'delivery' ? 'Any special delivery instructions…' : 'Any special requests…'}
+                  value={formData.specialInstructions}
+                  onChange={(e) => handleChange('specialInstructions', e.target.value)}
+                />
+              </div>
+            </section>
+
+            <section className="lg:sh-card" style={{ padding: 0 }}>
+              <div className="lg:p-6">
+                <h3 className="mb-4" style={{ font: '600 18px/24px var(--font-display)', color: 'var(--ink)' }}>
+                  Payment method
+                </h3>
+
+                <div className="space-y-3">
+                  <PaymentRow
+                    active={paymentMethod === 'cash'}
+                    icon="check"
+                    title={orderType === 'delivery' ? 'Cash on delivery' : 'Cash on collection'}
+                    subtitle={orderType === 'delivery' ? 'Pay when your order arrives' : 'Pay when you collect'}
+                    onClick={() => setPaymentMethod('cash')}
+                  />
+                  <PaymentRow
+                    active={paymentMethod === 'card'}
+                    disabled
+                    icon="credit-card"
+                    title="Card payment"
+                    subtitle="Coming soon"
+                    onClick={() => setPaymentMethod('card')}
+                  />
+                </div>
+              </div>
+            </section>
+
+            {apiError && (
+              <div
+                className="p-4 lg:hidden"
+                style={{ borderRadius: 'var(--radius-md)', background: 'var(--brand-soft)', border: '1px solid var(--danger)' }}
+              >
+                <p style={{ color: 'var(--danger)' }}>{apiError}</p>
+              </div>
+            )}
           </div>
 
-          {/* Order Summary - Sidebar on Desktop */}
           <div className="mt-6 lg:mt-0 lg:w-96 lg:flex-shrink-0">
             <div className="lg:sticky lg:top-8">
-              <section className="lg:bg-white lg:rounded-xl lg:p-6 lg:border lg:border-gray-200">
-                <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
+              <section className="lg:sh-card" style={{ padding: 0 }}>
+                <div className="lg:p-6">
+                  <SectionHeader title="Order summary" action={false} />
 
-                <div className="bg-gray-50 lg:bg-gray-50 rounded-xl p-4">
-                  {items.map((item) => (
-                    <div key={item.id} className="flex justify-between py-2">
-                      <span className="text-gray-600">
-                        {item.quantity}x {item.name} ({item.size})
-                      </span>
-                      <span>R{(item.price * item.quantity).toFixed(2)}</span>
-                    </div>
-                  ))}
+                  <div className="mt-3" style={{ background: 'var(--surface-sunken)', borderRadius: 'var(--radius-md)', padding: 16 }}>
+                    {items.map((item) => (
+                      <div key={item.id} className="flex justify-between py-2">
+                        <span style={{ color: 'var(--ink-muted)' }}>
+                          {item.quantity}x {item.name} ({item.size})
+                        </span>
+                        <span style={{ color: 'var(--ink)' }}>R{(item.price * item.quantity).toFixed(2)}</span>
+                      </div>
+                    ))}
 
-                  <div className="border-t border-gray-200 mt-2 pt-2 space-y-2">
-                    <div className="flex justify-between text-gray-600">
-                      <span>Subtotal</span>
-                      <span>R{subtotal.toFixed(2)}</span>
+                    <div className="mt-2 pt-2 space-y-2" style={{ borderTop: '1px solid var(--line)' }}>
+                      <div className="flex justify-between" style={{ color: 'var(--ink-muted)' }}>
+                        <span>Subtotal</span>
+                        <span>R{subtotal.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between" style={{ color: 'var(--ink-muted)' }}>
+                        <span>{orderType === 'delivery' ? 'Delivery fee' : 'Collection'}</span>
+                        <span>{orderType === 'collection' ? 'Free' : `R${deliveryFee.toFixed(2)}`}</span>
+                      </div>
+                      <div
+                        className="flex justify-between pt-2"
+                        style={{ borderTop: '1px solid var(--line)', font: '700 18px/24px var(--font-body)', color: 'var(--ink)' }}
+                      >
+                        <span>Total</span>
+                        <span>R{total.toFixed(2)}</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between text-gray-600">
-                      <span>{orderType === 'delivery' ? 'Delivery Fee' : 'Collection'}</span>
-                      <span>{orderType === 'collection' ? 'Free' : `R${deliveryFee.toFixed(2)}`}</span>
-                    </div>
-                    <div className="flex justify-between font-bold text-lg pt-2 border-t border-gray-200">
-                      <span>Total</span>
-                      <span>R{total.toFixed(2)}</span>
-                    </div>
-                  </div>
 
-                  {/* Desktop Submit Button */}
-                  <div className="hidden lg:block mt-4">
-                    <Button
-                      type="submit"
-                      fullWidth
-                      isLoading={isSubmitting}
-                    >
-                      Place {orderType === 'collection' ? 'Collection' : 'Delivery'} Order
-                    </Button>
+                    <div className="hidden lg:block mt-4">
+                      <Button type="submit" block disabled={isSubmitting}>
+                        {isSubmitting ? 'Placing order…' : `Place ${orderType === 'collection' ? 'collection' : 'delivery'} order`}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </section>
 
-              {/* API Error - Desktop */}
               {apiError && (
-                <div className="hidden lg:block mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-700">{apiError}</p>
+                <div
+                  className="hidden lg:block mt-4 p-4"
+                  style={{ borderRadius: 'var(--radius-md)', background: 'var(--brand-soft)', border: '1px solid var(--danger)' }}
+                >
+                  <p style={{ color: 'var(--danger)' }}>{apiError}</p>
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* Submit Button - Mobile only */}
-        <div className="px-4 py-4 bg-white border-t border-gray-100 safe-bottom lg:hidden">
-          <Button
-            type="submit"
-            fullWidth
-            isLoading={isSubmitting}
-          >
-            Place {orderType === 'collection' ? 'Collection' : 'Delivery'} Order - R{total.toFixed(2)}
+        <div className="px-4 py-4 safe-bottom lg:hidden" style={{ background: 'var(--surface)', borderTop: '1px solid var(--line)' }}>
+          <Button type="submit" block disabled={isSubmitting}>
+            {isSubmitting ? 'Placing order…' : `Place ${orderType === 'collection' ? 'collection' : 'delivery'} order • R${total.toFixed(2)}`}
           </Button>
         </div>
       </form>

@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { AlertCircle, Eye, EyeOff, X } from 'lucide-react';
-import { cn, validateEmail, validateSAPhoneNumber } from '@/lib/utils';
+import { AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { validateEmail, validateSAPhoneNumber } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
-import { Button } from '@/components/ui/Button';
-import Logo from '@/assets/kasibites-logo.svg';
+import { Button, Logo, TextField, IconButton } from '@/components/shisa';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -22,7 +21,7 @@ export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     setError(null);
   };
 
@@ -30,7 +29,6 @@ export default function Register() {
     e.preventDefault();
     setError(null);
 
-    // Validation
     if (!formData.name.trim() || formData.name.trim().length < 2) {
       setError('Please enter your full name');
       return;
@@ -59,19 +57,14 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      const result = await register(
-        formData.name,
-        formData.email,
-        formData.phone,
-        formData.password
-      );
+      const result = await register(formData.name, formData.email, formData.phone, formData.password);
 
       if (result.success) {
         navigate('/');
       } else {
         setError(result.error || 'Registration failed. Please try again.');
       }
-    } catch (err) {
+    } catch {
       setError('Something went wrong. Please try again.');
     } finally {
       setIsLoading(false);
@@ -79,189 +72,139 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-orange-500 lg:bg-gray-50 flex flex-col lg:items-center lg:justify-center lg:py-8">
-      {/* Mobile: Top Section with Close Button */}
-      <div className="p-4 safe-top lg:hidden">
-        <button
-          onClick={() => navigate('/')}
-          className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
-          aria-label="Close"
-        >
-          <X className="w-5 h-5 text-white" />
-        </button>
+    <div
+      className="flex flex-col lg:items-center lg:justify-center lg:py-8"
+      style={{ minHeight: '100dvh', background: 'var(--bg)' }}
+    >
+      <div className="p-4 safe-top lg:hidden flex justify-end">
+        <IconButton icon="x" label="Close" flat onClick={() => navigate('/')} />
       </div>
 
-      {/* Mobile: Logo Section */}
-      <div className="px-6 pt-2 pb-6 lg:hidden">
-        <h1 className="text-4xl font-bold text-white mb-2">Create</h1>
-        <h1 className="text-4xl font-black text-white">account</h1>
-        <p className="text-white/70 mt-2">Sign up to get started</p>
-      </div>
-
-      {/* Form Card - Mobile: slide up, Desktop: centered card */}
-      <div className="flex-1 bg-white rounded-t-3xl px-6 pt-6 pb-6 overflow-y-auto lg:flex-none lg:w-full lg:max-w-md lg:rounded-2xl lg:shadow-xl lg:border lg:border-gray-200 lg:p-8 lg:overflow-visible">
-        {/* Desktop: Logo and Header */}
+      <div
+        className="flex-1 overflow-y-auto lg:flex-none lg:w-full lg:max-w-md lg:overflow-visible relative"
+        style={{
+          background: 'var(--surface)',
+          borderRadius: 'var(--radius-xl) var(--radius-xl) 0 0',
+          padding: '24px 24px',
+          boxShadow: 'var(--shadow-card)',
+        }}
+      >
         <div className="hidden lg:block mb-6">
-          <button
+          <IconButton
+            icon="x"
+            label="Close"
+            flat
             onClick={() => navigate('/')}
-            className="absolute top-4 right-4 w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
-            aria-label="Close"
-          >
-            <X className="w-5 h-5 text-gray-600" />
-          </button>
+            className="absolute top-4 right-4"
+          />
           <Link to="/" className="flex justify-center mb-6">
-            <img src={Logo} alt="Kasi Bites" className="h-16" />
+            <Logo size={48} />
           </Link>
-          <h1 className="text-2xl font-bold text-center text-gray-900">Create account</h1>
-          <p className="text-gray-500 text-center mt-1">Sign up to get started</p>
+          <h1 className="text-center" style={{ font: '600 28px/34px var(--font-display)', color: 'var(--ink)' }}>
+            Create account
+          </h1>
+          <p className="text-center mt-1" style={{ color: 'var(--ink-muted)' }}>
+            Sign up to get started
+          </p>
         </div>
 
-        {/* Error Message */}
+        <div className="lg:hidden mb-6">
+          <h1 style={{ font: '600 28px/34px var(--font-display)', color: 'var(--ink)' }}>Create account</h1>
+          <p className="mt-1" style={{ color: 'var(--ink-muted)' }}>
+            Sign up to get started
+          </p>
+        </div>
+
         {error && (
-          <div className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl p-4 mb-5">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-            <p className="text-sm text-red-700">{error}</p>
+          <div
+            className="flex items-center gap-3 mb-5"
+            style={{
+              background: 'var(--brand-soft)',
+              border: '1px solid var(--danger)',
+              borderRadius: 'var(--radius-md)',
+              padding: 16,
+            }}
+          >
+            <AlertCircle size={20} style={{ color: 'var(--danger)', flexShrink: 0 }} />
+            <p className="text-sm" style={{ color: 'var(--danger)' }}>
+              {error}
+            </p>
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Full Name
-            </label>
-            <input
-              type="text"
-              placeholder="Enter your full name"
-              value={formData.name}
-              onChange={(e) => handleChange('name', e.target.value)}
-              autoComplete="name"
-              className={cn(
-                'w-full bg-gray-50 border border-gray-200 rounded-xl',
-                'px-4 py-3.5 text-base text-black placeholder-gray-400',
-                'outline-none transition-all duration-150',
-                'focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20'
-              )}
-            />
-          </div>
+          <TextField
+            label="Full name"
+            type="text"
+            placeholder="Enter your full name"
+            value={formData.name}
+            onChange={(e) => handleChange('name', e.target.value)}
+            autoComplete="name"
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={formData.email}
-              onChange={(e) => handleChange('email', e.target.value)}
-              autoComplete="email"
-              className={cn(
-                'w-full bg-gray-50 border border-gray-200 rounded-xl',
-                'px-4 py-3.5 text-base text-black placeholder-gray-400',
-                'outline-none transition-all duration-150',
-                'focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20'
-              )}
-            />
-          </div>
+          <TextField
+            label="Email"
+            type="email"
+            placeholder="Enter your email"
+            value={formData.email}
+            onChange={(e) => handleChange('email', e.target.value)}
+            autoComplete="email"
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              placeholder="0821234567"
-              value={formData.phone}
-              onChange={(e) => handleChange('phone', e.target.value)}
-              autoComplete="tel"
-              className={cn(
-                'w-full bg-gray-50 border border-gray-200 rounded-xl',
-                'px-4 py-3.5 text-base text-black placeholder-gray-400',
-                'outline-none transition-all duration-150',
-                'focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20'
-              )}
-            />
-          </div>
+          <TextField
+            label="Phone number"
+            type="tel"
+            placeholder="0821234567"
+            value={formData.phone}
+            onChange={(e) => handleChange('phone', e.target.value)}
+            autoComplete="tel"
+          />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Create a password"
-                value={formData.password}
-                onChange={(e) => handleChange('password', e.target.value)}
-                autoComplete="new-password"
-                className={cn(
-                  'w-full bg-gray-50 border border-gray-200 rounded-xl',
-                  'px-4 py-3.5 pr-12 text-base text-black placeholder-gray-400',
-                  'outline-none transition-all duration-150',
-                  'focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20'
-                )}
-              />
+          <TextField
+            label="Password"
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Create a password"
+            value={formData.password}
+            onChange={(e) => handleChange('password', e.target.value)}
+            autoComplete="new-password"
+            trailing={
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                style={{ color: 'var(--ink-subtle)', display: 'flex' }}
               >
-                {showPassword ? (
-                  <EyeOff className="w-5 h-5" />
-                ) : (
-                  <Eye className="w-5 h-5" />
-                )}
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
-            </div>
-            <p className="mt-1.5 text-xs text-gray-500">
-              Must be at least 8 characters
-            </p>
-          </div>
+            }
+          />
+          <p className="-mt-3 text-xs" style={{ color: 'var(--ink-muted)' }}>
+            Must be at least 8 characters
+          </p>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Confirm Password
-            </label>
-            <input
-              type={showPassword ? 'text' : 'password'}
-              placeholder="Confirm your password"
-              value={formData.confirmPassword}
-              onChange={(e) => handleChange('confirmPassword', e.target.value)}
-              autoComplete="new-password"
-              className={cn(
-                'w-full bg-gray-50 border border-gray-200 rounded-xl',
-                'px-4 py-3.5 text-base text-black placeholder-gray-400',
-                'outline-none transition-all duration-150',
-                'focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20'
-              )}
-            />
-          </div>
+          <TextField
+            label="Confirm password"
+            type={showPassword ? 'text' : 'password'}
+            placeholder="Confirm your password"
+            value={formData.confirmPassword}
+            onChange={(e) => handleChange('confirmPassword', e.target.value)}
+            autoComplete="new-password"
+          />
 
-          <Button
-            type="submit"
-            fullWidth
-            isLoading={isLoading}
-            className="bg-orange-500 hover:bg-orange-600 py-4 text-base mt-4"
-          >
-            Create Account
+          <Button type="submit" block disabled={isLoading}>
+            {isLoading ? 'Creating account…' : 'Create account'}
           </Button>
         </form>
 
-        {/* Login Link */}
-        <p className="mt-6 text-center text-gray-600 safe-bottom lg:pb-0">
+        <p className="mt-6 text-center safe-bottom lg:pb-0" style={{ color: 'var(--ink-muted)' }}>
           Already have an account?{' '}
-          <Link to="/login" className="text-orange-500 font-semibold hover:text-orange-600">
+          <Link to="/login" className="sh-link">
             Sign in
           </Link>
         </p>
       </div>
 
-      {/* Desktop: Back to home link */}
       <div className="hidden lg:block mt-6">
-        <button
-          onClick={() => navigate('/')}
-          className="text-gray-500 hover:text-gray-700 text-sm"
-        >
+        <button onClick={() => navigate('/')} className="text-sm" style={{ color: 'var(--ink-muted)' }}>
           ← Back to home
         </button>
       </div>

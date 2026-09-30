@@ -1,7 +1,7 @@
-import { Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { CartItem as CartItemType } from '@/types';
-import { QuantitySelector } from './QuantitySelector';
+import { Stepper, IconButton } from '@/components/shisa';
+import { art } from '@/components/shisa/art';
 
 interface CartItemProps {
   item: CartItemType;
@@ -15,53 +15,39 @@ export function CartItem({ item, onUpdateQuantity, onRemove, className }: CartIt
 
   return (
     <div className={cn('flex gap-3 py-4', className)}>
-      {/* Product Image */}
-      <div className="w-20 h-20 rounded-xl flex-shrink-0 overflow-hidden">
+      <div className="w-20 h-20 flex-shrink-0 overflow-hidden" style={{ borderRadius: 'var(--radius-md)', background: 'var(--brand-soft)' }}>
         {item.imageUrl ? (
-          <img
-            src={item.imageUrl}
-            alt={item.name}
-            className="w-full h-full object-cover"
-          />
+          <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full bg-orange-50 flex items-center justify-center">
-            <span className="text-3xl">🍟</span>
-          </div>
+          <img src={art('kota')} alt="" className="w-full h-full object-cover" />
         )}
       </div>
 
-      {/* Item Details */}
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-start">
           <div className="flex-1 min-w-0 pr-2">
-            <h3 className="font-medium text-base line-clamp-1">{item.name}</h3>
-            <p className="text-sm text-gray-500">{item.size}</p>
+            <h3 className="line-clamp-1" style={{ font: '500 16px/22px var(--font-display)', color: 'var(--ink)' }}>
+              {item.name}
+            </h3>
+            <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+              {item.size}
+            </p>
             {item.addons && item.addons.length > 0 && (
-              <p className="text-xs text-orange-500">
-                + {item.addons.map(a => a.name).join(', ')}
+              <p className="text-xs" style={{ color: 'var(--brand-text)' }}>
+                + {item.addons.map((a) => a.name).join(', ')}
               </p>
             )}
-            <p className="text-sm text-gray-500">R{item.price.toFixed(2)} each</p>
+            <p className="text-sm" style={{ color: 'var(--ink-muted)' }}>
+              R{item.price.toFixed(2)} each
+            </p>
           </div>
 
-          {/* Remove Button */}
-          <button
-            onClick={() => onRemove(item.id)}
-            className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-            aria-label="Remove item"
-          >
-            <Trash2 className="w-5 h-5" />
-          </button>
+          <IconButton icon="x" label="Remove item" size="sm" flat onClick={() => onRemove(item.id)} />
         </div>
 
-        {/* Quantity and Total */}
         <div className="flex items-center justify-between mt-2">
-          <QuantitySelector
-            quantity={item.quantity}
-            onQuantityChange={(quantity) => onUpdateQuantity(item.id, quantity)}
-            size="sm"
-          />
-          <span className="font-semibold">R{itemTotal.toFixed(2)}</span>
+          <Stepper value={item.quantity} onChange={(q) => onUpdateQuantity(item.id, q)} />
+          <span style={{ font: '700 15px/20px var(--font-body)', color: 'var(--ink)' }}>R{itemTotal.toFixed(2)}</span>
         </div>
       </div>
     </div>

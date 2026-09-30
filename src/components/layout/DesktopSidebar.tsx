@@ -1,12 +1,11 @@
-import { NavLink, useLocation } from 'react-router-dom';
-import { Home, ClipboardList, User, UserPlus, LogIn } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Link, useLocation } from 'react-router-dom';
+import { SideNav } from '@/components/shisa';
 import { useAuth } from '@/context/AuthContext';
 
 const NAV_ITEMS = [
-  { path: '/', icon: Home, label: 'Stores' },
-  { path: '/orders', icon: ClipboardList, label: 'Orders' },
-  { path: '/profile', icon: User, label: 'Account' },
+  { path: '/', icon: 'house', label: 'Stores' },
+  { path: '/orders', icon: 'receipt-text', label: 'Orders' },
+  { path: '/profile', icon: 'circle-user', label: 'Account' },
 ];
 
 // Routes where sidebar should be hidden
@@ -16,56 +15,26 @@ export function DesktopSidebar() {
   const location = useLocation();
   const { user } = useAuth();
 
-  // Hide on certain routes
-  const shouldHide = HIDDEN_ROUTES.some(route =>
-    location.pathname.startsWith(route)
-  );
-
+  const shouldHide = HIDDEN_ROUTES.some((route) => location.pathname.startsWith(route));
   if (shouldHide) return null;
 
   return (
-    <aside className="hidden lg:flex flex-col w-56 bg-white border-r border-gray-100 fixed left-0 top-16 bottom-0 z-40">
-      {/* Main Navigation */}
-      <nav className="flex-1 py-4">
-        <ul className="space-y-1 px-3">
-          {NAV_ITEMS.map(({ path, icon: Icon, label }) => (
-            <li key={path}>
-              <NavLink
-                to={path}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
-                    isActive
-                      ? 'bg-gray-100 text-black'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-black'
-                  )
-                }
-              >
-                <Icon className="w-5 h-5" />
-                {label}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
+    <aside
+      className="hidden lg:flex flex-col w-56 fixed left-0 top-16 bottom-0 z-40"
+      style={{ background: 'var(--surface)', borderRight: '1px solid var(--line)' }}
+    >
+      <div className="flex-1 py-4 px-3">
+        <SideNav items={NAV_ITEMS.map((i) => ({ label: i.label, icon: i.icon, path: i.path, end: i.path === '/' }))} />
+      </div>
 
-      {/* Bottom Section - Auth */}
       {!user && (
-        <div className="border-t border-gray-100 p-4 space-y-2">
-          <NavLink
-            to="/register"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-black transition-colors"
-          >
-            <UserPlus className="w-5 h-5" />
+        <div className="p-4 flex flex-col gap-1" style={{ borderTop: '1px solid var(--line)' }}>
+          <Link to="/register" className="sh-side-item">
             Sign up
-          </NavLink>
-          <NavLink
-            to="/login"
-            className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-black transition-colors"
-          >
-            <LogIn className="w-5 h-5" />
+          </Link>
+          <Link to="/login" className="sh-side-item">
             Log in
-          </NavLink>
+          </Link>
         </div>
       )}
     </aside>

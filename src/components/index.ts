@@ -1,12 +1,12 @@
-// UI Components
-export * from './ui';
+// Shisa design-system components
+export * from './shisa';
 
 // Layout Components
-export * from './layout';
+export { Header, DesktopHeader, DesktopSidebar } from './layout';
+export { BottomNav as MobileBottomNav } from './layout';
 
 // Feature Components
 export { ProductCard } from './ProductCard';
 export { ProductModal } from './ProductModal';
 export { CartItem } from './CartItem';
 export { CartDropdown } from './CartDropdown';
-export { QuantitySelector } from './QuantitySelector';

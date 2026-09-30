@@ -1,5 +1,5 @@
 // App Constants
-export const APP_NAME = 'Kasi Bites';
+export const APP_NAME = 'Shisa';
 export const APP_DESCRIPTION = 'Order delicious food for delivery';
 
 // API Configuration
